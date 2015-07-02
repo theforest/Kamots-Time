@@ -108,6 +108,7 @@ static void update_proc(Layer *layer, GContext *ctx) {
     hour_angle = TRIG_MAX_ANGLE * mode_time.hours / 60;
   } else {
     hour_angle = TRIG_MAX_ANGLE * mode_time.hours / 12;
+    handle_battery(battery_state_service_peek());
   }
   hour_angle += (minute_angle / TRIG_MAX_ANGLE) * (TRIG_MAX_ANGLE / 12);
 
@@ -123,7 +124,7 @@ static void update_proc(Layer *layer, GContext *ctx) {
 
   // Draw hands with positive length only
   graphics_context_set_stroke_width(ctx, 4);
-  graphics_context_set_stroke_color(ctx, GColorOxfordBlue);
+  graphics_context_set_stroke_color(ctx, GColorRed);
   if(s_radius > 2 * HAND_MARGIN) {
     graphics_draw_line(ctx, s_center, hour_hand);
   } 
