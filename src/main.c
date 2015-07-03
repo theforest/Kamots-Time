@@ -5,7 +5,7 @@
 #define ANTIALIASING true
 
 #define HAND_MARGIN  12
-#define FINAL_RADIUS 64
+#define FINAL_RADIUS 68
 
 #define ANIMATION_DURATION 300
 #define ANIMATION_DELAY    400
@@ -16,13 +16,18 @@ typedef struct {
 } Time;
 
 static Window *s_main_window;
-static Layer *s_canvas_layer;
-static TextLayer *s_battery_layer;
+static Layer *s_canvas_layer, *s_battery_layer;
 
 static GPoint s_center;
 static Time s_last_time, s_anim_time;
 static int s_radius = 0;
 static bool s_animating = false;
+int battery_level = 100;
+bool battery_charging = false;
+
+int map(int x, int in_min, int in_max, int out_min, int out_max) { // Borrowed from Arduino
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
 /*************************** AnimationImplementation **************************/
 
@@ -52,14 +57,13 @@ static void animate(int duration, int delay, AnimationImplementation *implementa
 /************************************ UI **************************************/
 
 static void handle_battery(BatteryChargeState charge_state) {
-  static char battery_text[] = "100%";
+  battery_charging = charge_state.is_charging;
+  battery_level = charge_state.charge_percent;
 
-  if (charge_state.is_charging) {
-    snprintf(battery_text, sizeof(battery_text), "CHRG");
-  } else {
-    snprintf(battery_text, sizeof(battery_text), "%d%%", charge_state.charge_percent);
+  // Redraw
+  if(s_battery_layer) {
+    layer_mark_dirty(s_battery_layer);
   }
-  text_layer_set_text(s_battery_layer, battery_text);
 }
 
 static void tick_handler(struct tm *tick_time, TimeUnits changed) {
@@ -78,7 +82,7 @@ static int hours_to_minutes(int hours_out_of_12) {
   return (int)(float)(((float)hours_out_of_12 / 12.0F) * 60.0F);
 }
 
-static void update_proc(Layer *layer, GContext *ctx) {
+static void main_update_proc(Layer *layer, GContext *ctx) {
   // Color background?
   if(COLORS) {
     graphics_context_set_fill_color(ctx, GColorDarkGreen);
@@ -89,7 +93,7 @@ static void update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_antialiased(ctx, ANTIALIASING);
 
   // clockface
-  graphics_context_set_fill_color(ctx, GColorBrightGreen);
+  graphics_context_set_fill_color(ctx, GColorWhite);
   graphics_fill_circle(ctx, s_center, s_radius);
 
   // Draw outline
@@ -134,6 +138,13 @@ static void update_proc(Layer *layer, GContext *ctx) {
   }
 }
 
+static void battery_update_proc(Layer *layer, GContext *ctx) {
+  graphics_context_set_stroke_color(ctx, GColorBlack);
+  graphics_draw_round_rect(ctx, GRect(0, 0, 20, 9), 1); // Outside of battery
+  graphics_fill_rect(ctx, GRect(20, 3, 2, 3), 0, 0); // Battery positive terminal
+  graphics_fill_rect(ctx, GRect(2, 2, map(battery_level, 0, 100, 0, 16), 5), 0, 0); // Inside of battery
+}
+
 static void window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect window_bounds = layer_get_bounds(window_layer);
@@ -142,24 +153,20 @@ static void window_load(Window *window) {
   
   // Main watchface layer
   s_canvas_layer = layer_create(window_bounds);
-  layer_set_update_proc(s_canvas_layer, update_proc);
+  layer_set_update_proc(s_canvas_layer, main_update_proc);
   layer_add_child(window_layer, s_canvas_layer);
 
   // Battery status layer
-  s_battery_layer = text_layer_create(GRect(0, 146, window_bounds.size.w, 38));
-  text_layer_set_text_color(s_battery_layer, GColorWhite);
-  text_layer_set_background_color(s_battery_layer, GColorClear);
-  text_layer_set_font(s_battery_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
-  text_layer_set_text_alignment(s_battery_layer, GTextAlignmentCenter);
-  text_layer_set_text(s_battery_layer, "    ");
-  layer_add_child(window_layer, text_layer_get_layer(s_battery_layer));
+  s_battery_layer = layer_create(GRect(120, 2, 24, 10)); // Top right-hand of screen, 24x10 size
+  layer_set_update_proc(s_battery_layer, battery_update_proc);
+  layer_add_child(window_layer, s_battery_layer);
 }
 
 static void window_unload(Window *window) {
   tick_timer_service_unsubscribe();
   battery_state_service_unsubscribe();
   layer_destroy(s_canvas_layer);
-  text_layer_destroy(s_battery_layer);
+  layer_destroy(s_battery_layer);
 }
 
 /*********************************** App **************************************/
