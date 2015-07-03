@@ -4,7 +4,7 @@
 #define COLORS       true
 #define ANTIALIASING true
 
-#define HAND_MARGIN  12
+#define HAND_MARGIN  14
 #define FINAL_RADIUS 68
 
 #define ANIMATION_DURATION 300
@@ -24,6 +24,8 @@ static int s_radius = 0;
 static bool s_animating = false;
 int battery_level = 100;
 bool battery_charging = false;
+GColor color_hour_hand, color_minute_hand, color_hour_markers,
+       color_watchface_outline, color_watchface_background, color_surround_background;
 
 int map(int x, int in_min, int in_max, int out_min, int out_max) { // Borrowed from Arduino
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -83,21 +85,18 @@ static int hours_to_minutes(int hours_out_of_12) {
 }
 
 static void main_update_proc(Layer *layer, GContext *ctx) {
-  // Color background?
-  if(COLORS) {
-    graphics_context_set_fill_color(ctx, GColorDarkGreen);
-    graphics_fill_rect(ctx, GRect(0, 0, 144, 168), 0, GCornerNone);
-  }
+  graphics_context_set_fill_color(ctx, color_surround_background);
+  graphics_fill_rect(ctx, GRect(0, 0, 144, 168), 0, GCornerNone);
 
   // For smooth lines
   graphics_context_set_antialiased(ctx, ANTIALIASING);
 
   // clockface
-  graphics_context_set_fill_color(ctx, GColorWhite);
+  graphics_context_set_fill_color(ctx, color_watchface_background);
   graphics_fill_circle(ctx, s_center, s_radius);
 
   // Draw outline
-  graphics_context_set_stroke_color(ctx, GColorBlack);
+  graphics_context_set_stroke_color(ctx, color_watchface_outline);
   graphics_context_set_stroke_width(ctx, 2);
   graphics_draw_circle(ctx, s_center, s_radius);
 
@@ -128,20 +127,35 @@ static void main_update_proc(Layer *layer, GContext *ctx) {
 
   // Draw hands with positive length only
   graphics_context_set_stroke_width(ctx, 4);
-  graphics_context_set_stroke_color(ctx, GColorRed);
+  graphics_context_set_stroke_color(ctx, color_hour_hand);
   if(s_radius > 2 * HAND_MARGIN) {
     graphics_draw_line(ctx, s_center, hour_hand);
   } 
-  graphics_context_set_stroke_color(ctx, GColorBlue);
+  graphics_context_set_stroke_color(ctx, color_minute_hand);
   if(s_radius > HAND_MARGIN) {
     graphics_draw_line(ctx, s_center, minute_hand);
+  }
+  
+  // Draw hour markers
+  float marker_angle;
+  GPoint hour_marker;
+  graphics_context_set_fill_color(ctx, color_hour_markers);
+  for(int8_t i = 12; i>0; i--) {
+    marker_angle = TRIG_MAX_ANGLE * i / 12;
+    hour_marker = (GPoint) {
+    .x = (int16_t)(sin_lookup(marker_angle) * (int32_t)(s_radius - 7) / TRIG_MAX_RATIO) + s_center.x,
+    .y = (int16_t)(-cos_lookup(marker_angle) * (int32_t)(s_radius - 7) / TRIG_MAX_RATIO) + s_center.y,};
+    graphics_fill_circle(ctx, hour_marker, 4);
   }
 }
 
 static void battery_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_stroke_color(ctx, GColorBlack);
+  graphics_context_set_fill_color(ctx, GColorBlack);
   graphics_draw_round_rect(ctx, GRect(0, 0, 20, 9), 1); // Outside of battery
   graphics_fill_rect(ctx, GRect(20, 3, 2, 3), 0, 0); // Battery positive terminal
+  if(battery_level <= 20) graphics_context_set_fill_color(ctx, battery_charging ? GColorBlue:GColorDarkCandyAppleRed);
+  else graphics_context_set_fill_color(ctx, battery_charging ? GColorBlue:GColorBlack);
   graphics_fill_rect(ctx, GRect(2, 2, map(battery_level, 0, 100, 0, 16), 5), 0, 0); // Inside of battery
 }
 
@@ -189,6 +203,13 @@ static void hands_update(Animation *anim, AnimationProgress dist_normalized) {
 }
 
 static void init() {
+  color_hour_hand = GColorRed; // Default colors
+  color_minute_hand = GColorBlue;
+  color_hour_markers = GColorDarkGreen;
+  color_watchface_outline = GColorBlack;
+  color_watchface_background = GColorWhite;
+  color_surround_background = GColorDarkGreen;
+  
   srand(time(NULL));
 
   time_t t = time(NULL);
