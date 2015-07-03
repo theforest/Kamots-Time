@@ -1,4 +1,9 @@
 /*
+*** Kamots Time ***
+Original code based from: https://github.com/pebble-examples/ks-clock-face
+...which is Copyright (C) 2015 Pebble Technology and licensed under the MIT License
+
+Changes and additions by kamotswind...
 Copyright 2013 kamotswind
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
