@@ -26,8 +26,8 @@ limitations under the License.
 #define HAND_MARGIN  14
 #define FINAL_RADIUS 68
 
-#define ANIMATION_DURATION 300
-#define ANIMATION_DELAY    400
+#define ANIMATION_DURATION 400
+#define ANIMATION_DELAY    500
 
 typedef struct {
   int hours;
@@ -36,6 +36,7 @@ typedef struct {
 
 static Window *s_main_window;
 static Layer *s_canvas_layer, *s_battery_layer;
+static TextLayer *s_date_layer, *s_day_layer;
 
 static GPoint s_center;
 static Time s_last_time, s_anim_time;
@@ -45,6 +46,7 @@ int battery_level = 100;
 bool battery_charging = false;
 GColor color_hour_hand, color_minute_hand, color_hour_markers,
        color_watchface_outline, color_watchface_background, color_surround_background;
+char text_date[] = "01", text_day[] = "Mon";
 
 int map(int x, int in_min, int in_max, int out_min, int out_max) { // Borrowed from Arduino
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -93,9 +95,19 @@ static void tick_handler(struct tm *tick_time, TimeUnits changed) {
   s_last_time.hours -= (s_last_time.hours > 12) ? 12 : 0;
   s_last_time.minutes = tick_time->tm_min;
 
+  // Change day/date displays
+  strftime(text_date, sizeof(text_date), "%d", tick_time);
+  strftime(text_day, sizeof(text_day), "%a", tick_time);
+  
   // Redraw
   if(s_canvas_layer) {
     layer_mark_dirty(s_canvas_layer);
+  }
+  if(s_date_layer) {
+    layer_mark_dirty(text_layer_get_layer(s_date_layer));
+  }
+  if(s_day_layer) {
+    layer_mark_dirty(text_layer_get_layer(s_day_layer));
   }
 }
 
@@ -190,9 +202,23 @@ static void window_load(Window *window) {
   layer_add_child(window_layer, s_canvas_layer);
 
   // Battery status layer
-  s_battery_layer = layer_create(GRect(120, 2, 24, 10)); // Top right-hand of screen, 24x10 size
+  s_battery_layer = layer_create(GRect(118, 3, 24, 10)); // Top right-hand of screen, 24x10 size
   layer_set_update_proc(s_battery_layer, battery_update_proc);
   layer_add_child(window_layer, s_battery_layer);
+  
+  // date layer
+  s_date_layer = text_layer_create(GRect(24, -2, 24, 14)); // Top left-hand of screen, 24x14 size
+  text_layer_set_text(s_date_layer, text_date);
+  text_layer_set_background_color(s_date_layer, color_surround_background);
+  text_layer_set_text_color(s_date_layer, GColorBlack);
+  layer_add_child(window_layer, text_layer_get_layer(s_date_layer));
+
+  // day layer
+  s_day_layer = text_layer_create(GRect(4, -2, 20, 14)); // Top left-hand of screen, 20x14 size
+  text_layer_set_text(s_day_layer, text_day);
+  text_layer_set_background_color(s_day_layer, color_surround_background);
+  text_layer_set_text_color(s_day_layer, GColorBlack);
+  layer_add_child(window_layer, text_layer_get_layer(s_day_layer));
 }
 
 static void window_unload(Window *window) {
@@ -200,6 +226,7 @@ static void window_unload(Window *window) {
   battery_state_service_unsubscribe();
   layer_destroy(s_canvas_layer);
   layer_destroy(s_battery_layer);
+  text_layer_destroy(s_date_layer);
 }
 
 /*********************************** App **************************************/
