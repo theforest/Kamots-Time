@@ -46,7 +46,7 @@ int battery_level = 100;
 bool battery_charging = false;
 GColor color_hour_hand, color_minute_hand, color_hour_markers,
        color_watchface_outline, color_watchface_background, color_surround_background;
-char text_date[] = "01", text_day[] = "Mon";
+char text_date[] = "28", text_day[] = "Wed";
 
 int map(int x, int in_min, int in_max, int out_min, int out_max) { // Borrowed from Arduino
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -207,14 +207,14 @@ static void window_load(Window *window) {
   layer_add_child(window_layer, s_battery_layer);
   
   // date layer
-  s_date_layer = text_layer_create(GRect(24, -2, 24, 14)); // Top left-hand of screen, 24x14 size
+  s_date_layer = text_layer_create(GRect(30, -2, 18, 14)); // Top left-hand of screen, 24x14 size
   text_layer_set_text(s_date_layer, text_date);
   text_layer_set_background_color(s_date_layer, color_surround_background);
   text_layer_set_text_color(s_date_layer, GColorBlack);
   layer_add_child(window_layer, text_layer_get_layer(s_date_layer));
 
   // day layer
-  s_day_layer = text_layer_create(GRect(4, -2, 20, 14)); // Top left-hand of screen, 20x14 size
+  s_day_layer = text_layer_create(GRect(4, -2, 26, 14)); // Top left-hand of screen, 20x14 size
   text_layer_set_text(s_day_layer, text_day);
   text_layer_set_background_color(s_day_layer, color_surround_background);
   text_layer_set_text_color(s_day_layer, GColorBlack);
