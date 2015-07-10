@@ -91,8 +91,8 @@ static void tick_handler(struct tm *tick_time, TimeUnits changed) {
   s_last_time.minutes = tick_time->tm_min;
 
   // Change day/date displays
-  strftime(text_date, sizeof(text_date), "%d", tick_time);
-  strftime(text_day, sizeof(text_day), "%a", tick_time);
+  //strftime(text_date, sizeof(text_date), "%d", tick_time);
+  //strftime(text_day, sizeof(text_day), "%a", tick_time);
   
   if(conf.display_digital) {
     // Change digital time display (if enabled)
@@ -215,20 +215,6 @@ static void window_load(Window *window) {
   s_battery_layer = layer_create(GRect(118, 3, 24, 10)); // Top right-hand of screen, 24x10 size
   layer_set_update_proc(s_battery_layer, battery_update_proc);
   layer_add_child(window_layer, s_battery_layer);
-  
-  // date layer
-  s_date_layer = text_layer_create(GRect(30, -2, 18, 14)); // Top left-hand of screen, 18x14 size
-  text_layer_set_text(s_date_layer, text_date);
-  text_layer_set_background_color(s_date_layer, conf.color_surround_background);
-  text_layer_set_text_color(s_date_layer, conf.color_watchface_outline);
-  layer_add_child(window_layer, text_layer_get_layer(s_date_layer));
-
-  // day layer
-  s_day_layer = text_layer_create(GRect(4, -2, 26, 14)); // Top left-hand of screen, 26x14 size
-  text_layer_set_text(s_day_layer, text_day);
-  text_layer_set_background_color(s_day_layer, conf.color_surround_background);
-  text_layer_set_text_color(s_day_layer, conf.color_watchface_outline);
-  layer_add_child(window_layer, text_layer_get_layer(s_day_layer));
 
   // digital time
   if(conf.display_digital) {
@@ -248,6 +234,21 @@ static void window_load(Window *window) {
   GRect clock_bounds = layer_get_bounds(s_clock_layer);
   s_center = grect_center_point(&clock_bounds);
 
+  // date layer
+  s_date_layer = text_layer_create(GRect(34, -4, 18, 18)); // Top left-hand of screen, 18x18 size
+  text_layer_set_text(s_date_layer, text_date);
+  text_layer_set_background_color(s_date_layer, conf.color_surround_background);
+  text_layer_set_text_color(s_date_layer, conf.color_watchface_outline);
+  text_layer_set_font(s_date_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+  layer_add_child(window_layer, text_layer_get_layer(s_date_layer));
+
+  // day layer
+  s_day_layer = text_layer_create(GRect(2, -4, 30, 18)); // Top left-hand of screen, 30x18 size
+  text_layer_set_text(s_day_layer, text_day);
+  text_layer_set_background_color(s_day_layer, conf.color_surround_background);
+  text_layer_set_text_color(s_day_layer, conf.color_watchface_outline);
+  text_layer_set_font(s_day_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+  layer_add_child(window_layer, text_layer_get_layer(s_day_layer));
 }
 
 static void window_unload(Window *window) {
@@ -295,7 +296,7 @@ static void init() {
     confbytes = persist_write_data(KEY_CONFDAT, &conf, sizeof(conf)); // save config
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Wrote config ver %i, bytes: %i", confver, confbytes);
   }
-  conf.display_digital = true;
+
   srand(time(NULL));
 
   time_t t = time(NULL);
