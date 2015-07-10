@@ -257,6 +257,7 @@ static void window_unload(Window *window) {
   text_layer_destroy(s_date_layer);
   text_layer_destroy(s_day_layer);
   text_layer_destroy(s_digitime_layer);
+  text_layer_destroy(s_background_layer);
   layer_destroy(s_clock_layer);
   layer_destroy(s_battery_layer);
 }
