@@ -91,8 +91,8 @@ static void tick_handler(struct tm *tick_time, TimeUnits changed) {
   s_last_time.minutes = tick_time->tm_min;
 
   // Change day/date displays
-  //strftime(text_date, sizeof(text_date), "%d", tick_time);
-  //strftime(text_day, sizeof(text_day), "%a", tick_time);
+  strftime(text_date, sizeof(text_date), "%d", tick_time);
+  strftime(text_day, sizeof(text_day), "%a", tick_time);
   
   if(conf.display_digital) {
     // Change digital time display (if enabled)
