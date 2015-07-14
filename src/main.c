@@ -162,14 +162,14 @@ static void main_update_proc(Layer *layer, GContext *ctx) {
 
   // Draw hands with positive length only
   graphics_context_set_stroke_width(ctx, 4);
-  graphics_context_set_stroke_color(ctx, conf.color_hour_hand);
-  if(s_radius > 2 * HAND_MARGIN) {
-    graphics_draw_line(ctx, s_center, hour_hand);
-  } 
   graphics_context_set_stroke_color(ctx, conf.color_minute_hand);
   if(s_radius > HAND_MARGIN) {
     graphics_draw_line(ctx, s_center, minute_hand);
   }
+  graphics_context_set_stroke_color(ctx, conf.color_hour_hand);
+  if(s_radius > 2 * HAND_MARGIN) {
+    graphics_draw_line(ctx, s_center, hour_hand);
+  } 
   
   // Draw hour markers
   float marker_angle;
@@ -195,9 +195,7 @@ static void battery_update_proc(Layer *layer, GContext *ctx) {
 }
 
 static void window_appear(Window *window) {
-  Layer *window_layer = window_get_root_layer(window);
   window_set_background_color(window, conf.color_watchface_background);
-  
 }
 
 static void window_load(Window *window) {
@@ -234,14 +232,6 @@ static void window_load(Window *window) {
   GRect clock_bounds = layer_get_bounds(s_clock_layer);
   s_center = grect_center_point(&clock_bounds);
 
-  // date layer
-  s_date_layer = text_layer_create(GRect(34, -4, 18, 18)); // Top left-hand of screen, 18x18 size
-  text_layer_set_text(s_date_layer, text_date);
-  text_layer_set_background_color(s_date_layer, conf.color_surround_background);
-  text_layer_set_text_color(s_date_layer, conf.color_watchface_outline);
-  text_layer_set_font(s_date_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
-  layer_add_child(window_layer, text_layer_get_layer(s_date_layer));
-
   // day layer
   s_day_layer = text_layer_create(GRect(2, -4, 30, 18)); // Top left-hand of screen, 30x18 size
   text_layer_set_text(s_day_layer, text_day);
@@ -249,11 +239,17 @@ static void window_load(Window *window) {
   text_layer_set_text_color(s_day_layer, conf.color_watchface_outline);
   text_layer_set_font(s_day_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
   layer_add_child(window_layer, text_layer_get_layer(s_day_layer));
+  
+  // date layer
+  s_date_layer = text_layer_create(GRect(32, -4, 18, 18)); // Top left-hand of screen, 18x18 size
+  text_layer_set_text(s_date_layer, text_date);
+  text_layer_set_background_color(s_date_layer, conf.color_surround_background);
+  text_layer_set_text_color(s_date_layer, conf.color_watchface_outline);
+  text_layer_set_font(s_date_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+  layer_add_child(window_layer, text_layer_get_layer(s_date_layer));
 }
 
 static void window_unload(Window *window) {
-  tick_timer_service_unsubscribe();
-  battery_state_service_unsubscribe();
   text_layer_destroy(s_date_layer);
   text_layer_destroy(s_day_layer);
   text_layer_destroy(s_digitime_layer);
@@ -279,6 +275,42 @@ static void hands_update(Animation *anim, AnimationProgress dist_normalized) {
   s_anim_time.minutes = anim_percentage(dist_normalized, s_last_time.minutes);
 
   layer_mark_dirty(s_clock_layer);
+}
+
+static void inbox_received_callback(DictionaryIterator *iterator, void *context) {  
+  APP_LOG(APP_LOG_LEVEL_INFO, "Inbox message received");
+  char digitime[4];
+
+  // Read first item
+  Tuple *t = dict_read_first(iterator);
+
+  // For all items
+  while(t != NULL) {
+
+    // Which key was received?
+    switch(t->key) {
+    case KEY_DIGITIME:
+      strncpy(digitime, t->value->cstring, sizeof(digitime));
+
+      if (strcmp(digitime, "on") == 0) {
+        conf.display_digital = true;
+      } else {
+        conf.display_digital = false;
+      }
+      break;
+
+    default:
+      APP_LOG(APP_LOG_LEVEL_ERROR, "Key %d not recognized!", (int)t->key);
+      break;
+    }
+
+    // Look for next item
+    t = dict_read_next(iterator);
+  }
+}
+
+static void inbox_dropped_callback(AppMessageResult reason, void *context) {
+  APP_LOG(APP_LOG_LEVEL_ERROR, "Inbox Message dropped!");
 }
 
 static void init() {
@@ -316,6 +348,11 @@ static void init() {
   // Subscribe to events
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
   battery_state_service_subscribe(handle_battery);
+  app_message_register_inbox_received(inbox_received_callback);
+  app_message_register_inbox_dropped(inbox_dropped_callback);
+  
+  // Open AppMessage
+  app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
 
   // Prepare animations
   AnimationImplementation radius_impl = {
@@ -330,6 +367,15 @@ static void init() {
 }
 
 static void deinit() {
+  // Save any configuration changes
+  int confbytes = 0;
+  confbytes = persist_write_data(KEY_CONFDAT, &conf, sizeof(conf)); // save config
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "Exiting! Wrote config ver %i, bytes: %i", confver, confbytes);
+  
+  // Unsubscribe from events
+  tick_timer_service_unsubscribe();
+  battery_state_service_unsubscribe();
+  app_message_deregister_callbacks();
   window_destroy(s_main_window);
 }
 

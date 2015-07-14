@@ -1,6 +1,11 @@
 {
     "appKeys": {
-        "ChangeConfig": 1
+        "KEY_COLOR_HH": 1,
+        "KEY_COLOR_MH": 2,
+        "KEY_COLOR_SB": 5,
+        "KEY_COLOR_WB": 4,
+        "KEY_COLOR_WO": 3,
+        "KEY_DIGITIME": 6
     },
     "capabilities": [
         "configurable"
@@ -17,7 +22,7 @@
         "basalt"
     ],
     "uuid": "6930038e-f881-44c5-8822-9e32066049df",
-    "versionLabel": "0.8",
+    "versionLabel": "0.9",
     "watchapp": {
         "watchface": true
     }

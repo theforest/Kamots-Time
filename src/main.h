@@ -14,6 +14,13 @@
 const uint32_t KEY_CONFVER = 52668701; // int - configuration version
 const uint32_t KEY_CONFDAT = 52668711; // data - configuration data
 
+// Phone communication keys
+#define KEY_COLOR_HH 1
+#define KEY_COLOR_MH 2
+#define KEY_COLOR_WO 3
+#define KEY_COLOR_WB 4
+#define KEY_COLOR_SB 5
+#define KEY_DIGITIME 6
 
 typedef struct {
   int hours;
