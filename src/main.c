@@ -216,17 +216,17 @@ static void window_load(Window *window) {
 
   // digital time
   if(conf.display_digital) {
-    s_digitime_layer = text_layer_create(GRect(52, 153, 40, 15)); // Bottom center of screen, 40x14 size
+    s_digitime_layer = text_layer_create(GRect(52, 148, 40, 19)); // Bottom center of screen
     text_layer_set_text(s_digitime_layer, text_time);
     text_layer_set_background_color(s_digitime_layer, conf.color_surround_background);
     text_layer_set_text_color(s_digitime_layer, conf.color_watchface_outline);
     text_layer_set_text_alignment(s_digitime_layer, GTextAlignmentCenter);
-    //layer_insert_below_sibling(s_clock_layer, text_layer_get_layer(s_digitime_layer));
+    text_layer_set_font(s_digitime_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
     layer_add_child(window_layer, text_layer_get_layer(s_digitime_layer));
   }
-
+  
   // Main clock layer
-  s_clock_layer = layer_create(GRect(0, 12, 144, 144));
+  s_clock_layer = layer_create(GRect(-1, 12, 144, 142));
   layer_set_update_proc(s_clock_layer, main_update_proc);
   layer_add_child(window_layer, s_clock_layer);
   GRect clock_bounds = layer_get_bounds(s_clock_layer);
