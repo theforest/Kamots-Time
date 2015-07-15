@@ -175,11 +175,19 @@ static void main_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_stroke_width(ctx, 4);
   graphics_context_set_stroke_color(ctx, conf.color_minute_hand);
   if(s_radius > HAND_MARGIN) {
+    #ifdef PBL_COLOR
     graphics_draw_line(ctx, s_center, minute_hand);
+    #else
+    graphics_draw_line2(ctx, s_center, minute_hand, 4);
+    #endif
   }
   graphics_context_set_stroke_color(ctx, conf.color_hour_hand);
   if(s_radius > 2 * HAND_MARGIN) {
+    #ifdef PBL_COLOR
     graphics_draw_line(ctx, s_center, hour_hand);
+    #else
+    graphics_draw_line2(ctx, s_center, hour_hand, 4);
+    #endif
   } 
   
   // Draw hour markers
@@ -202,7 +210,7 @@ static void battery_update_proc(Layer *layer, GContext *ctx) {
   graphics_fill_rect(ctx, GRect(20, 3, 2, 3), 0, 0); // Battery positive terminal
   if(battery_level <= 20) graphics_context_set_fill_color(ctx, battery_charging ? COLOR_FALLBACK(GColorBlue, GColorBlack):COLOR_FALLBACK(GColorDarkCandyAppleRed, GColorBlack));
   else graphics_context_set_fill_color(ctx, battery_charging ? COLOR_FALLBACK(GColorBlue, GColorBlack):conf.color_watchface_outline);
-  graphics_fill_rect(ctx, GRect(2, 2, map(battery_level, 0, 100, 0, 16), 5), 0, 0); // Inside of battery
+  graphics_fill_rect(ctx, GRect(2, 2, map(battery_level, 0, 100, 1, 16), 5), 0, 0); // Inside of battery
 }
 
 static void window_appear(Window *window) {
