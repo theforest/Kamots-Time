@@ -19,10 +19,11 @@
     "sdkVersion": "3",
     "shortName": "Kamots Time",
     "targetPlatforms": [
+        "aplite",
         "basalt"
     ],
     "uuid": "6930038e-f881-44c5-8822-9e32066049df",
-    "versionLabel": "0.9",
+    "versionLabel": "1.0",
     "watchapp": {
         "watchface": true
     }

@@ -40,4 +40,9 @@ typedef struct {
 
 appConfig conf;
 
+#if !PBL_COLOR
+void graphics_context_set_stroke_width(struct GContext *ctx, int width) {
+  ;
+}
+#endif
 #endif

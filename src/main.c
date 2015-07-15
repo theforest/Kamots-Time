@@ -65,12 +65,21 @@ static void animate(int duration, int delay, AnimationImplementation *implementa
 /************************************ UI **************************************/
 
 static void load_defaults() {
+  #ifndef PBL_COLOR
+  conf.color_hour_hand = GColorBlack; // Default colors, well, black and white
+  conf.color_minute_hand = GColorBlack;
+  conf.color_hour_markers = GColorBlack;
+  conf.color_watchface_outline = GColorBlack;
+  conf.color_watchface_background = GColorWhite;
+  conf.color_surround_background = GColorClear;
+  #else
   conf.color_hour_hand = GColorRed; // Default colors
   conf.color_minute_hand = GColorBlue;
   conf.color_hour_markers = GColorDarkGreen;
   conf.color_watchface_outline = GColorBlack;
   conf.color_watchface_background = GColorWhite;
   conf.color_surround_background = GColorDarkGreen;
+  #endif
   conf.display_digital = false; // Default not displaying digital time
 }
 
@@ -123,9 +132,11 @@ static void main_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_fill_color(ctx, conf.color_surround_background);
   graphics_fill_rect(ctx, layer_get_bounds(layer), 0, GCornerNone);
 
+#ifdef PBL_COLOR
   // For smooth lines
   graphics_context_set_antialiased(ctx, ANTIALIASING);
-
+#endif
+  
   // clockface
   graphics_context_set_fill_color(ctx, conf.color_watchface_background);
   graphics_fill_circle(ctx, s_center, s_radius);
@@ -189,8 +200,8 @@ static void battery_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_fill_color(ctx, conf.color_watchface_outline);
   graphics_draw_round_rect(ctx, GRect(0, 0, 20, 9), 1); // Outside of battery
   graphics_fill_rect(ctx, GRect(20, 3, 2, 3), 0, 0); // Battery positive terminal
-  if(battery_level <= 20) graphics_context_set_fill_color(ctx, battery_charging ? GColorBlue:GColorDarkCandyAppleRed);
-  else graphics_context_set_fill_color(ctx, battery_charging ? GColorBlue:conf.color_watchface_outline);
+  if(battery_level <= 20) graphics_context_set_fill_color(ctx, battery_charging ? COLOR_FALLBACK(GColorBlue, GColorBlack):COLOR_FALLBACK(GColorDarkCandyAppleRed, GColorBlack));
+  else graphics_context_set_fill_color(ctx, battery_charging ? COLOR_FALLBACK(GColorBlue, GColorBlack):conf.color_watchface_outline);
   graphics_fill_rect(ctx, GRect(2, 2, map(battery_level, 0, 100, 0, 16), 5), 0, 0); // Inside of battery
 }
 
