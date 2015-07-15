@@ -72,6 +72,7 @@ static void load_defaults() {
   conf.color_watchface_outline = GColorBlack;
   conf.color_watchface_background = GColorWhite;
   conf.color_surround_background = GColorClear;
+  conf.display_digital = true; // Default DO displaying digital time
   #else
   conf.color_hour_hand = GColorRed; // Default colors
   conf.color_minute_hand = GColorBlue;
@@ -79,8 +80,8 @@ static void load_defaults() {
   conf.color_watchface_outline = GColorBlack;
   conf.color_watchface_background = GColorWhite;
   conf.color_surround_background = GColorDarkGreen;
-  #endif
   conf.display_digital = false; // Default not displaying digital time
+  #endif
 }
 
 static void handle_battery(BatteryChargeState charge_state) {
@@ -186,7 +187,7 @@ static void main_update_proc(Layer *layer, GContext *ctx) {
     #ifdef PBL_COLOR
     graphics_draw_line(ctx, s_center, hour_hand);
     #else
-    graphics_draw_line2(ctx, s_center, hour_hand, 4);
+    graphics_draw_line2(ctx, s_center, hour_hand, 6);
     #endif
   } 
   
