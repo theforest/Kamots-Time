@@ -1,11 +1,12 @@
 {
     "appKeys": {
         "KEY_COLOR_HH": 1,
+        "KEY_COLOR_HM": 3,
         "KEY_COLOR_MH": 2,
-        "KEY_COLOR_SB": 5,
+        "KEY_COLOR_SB": 6,
         "KEY_COLOR_WB": 4,
-        "KEY_COLOR_WO": 3,
-        "KEY_DIGITIME": 6
+        "KEY_COLOR_WO": 5,
+        "KEY_DIGITIME": 7
     },
     "capabilities": [
         "configurable"

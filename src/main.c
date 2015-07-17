@@ -17,7 +17,6 @@ either express or implied. See the License for the specific language governing p
 limitations under the License.
 */
 
-#include <pebble.h>
 #include "main.h"
 
 static Window *s_main_window;
@@ -31,7 +30,7 @@ static bool s_animating = false;
 int battery_level = 100;
 bool battery_charging = false;
 char text_date[] = "28", text_day[] = "Wed", text_time[] = "23:59";
-int confver = 1;
+int confver = 0;
 
 int map(int x, int in_min, int in_max, int out_min, int out_max) { // Borrowed from Arduino
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -69,16 +68,16 @@ static void load_defaults() {
   conf.color_hour_hand = GColorBlack; // Default colors, well, black and white
   conf.color_minute_hand = GColorBlack;
   conf.color_hour_markers = GColorBlack;
-  conf.color_watchface_outline = GColorBlack;
   conf.color_watchface_background = GColorWhite;
+  conf.color_watchface_outline = GColorBlack;
   conf.color_surround_background = GColorClear;
   conf.display_digital = true; // Default DO displaying digital time
   #else
   conf.color_hour_hand = GColorRed; // Default colors
   conf.color_minute_hand = GColorBlue;
   conf.color_hour_markers = GColorDarkGreen;
-  conf.color_watchface_outline = GColorBlack;
   conf.color_watchface_background = GColorWhite;
+  conf.color_watchface_outline = GColorBlack;
   conf.color_surround_background = GColorDarkGreen;
   conf.display_digital = false; // Default not displaying digital time
   #endif
@@ -300,6 +299,9 @@ static void hands_update(Animation *anim, AnimationProgress dist_normalized) {
 static void inbox_received_callback(DictionaryIterator *iterator, void *context) {  
   APP_LOG(APP_LOG_LEVEL_INFO, "Inbox message received");
   char digitime[4];
+#ifdef PBL_COLOR
+  int32_t colorint = 0;
+#endif
 
   // Read first item
   Tuple *t = dict_read_first(iterator);
@@ -318,9 +320,39 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
         conf.display_digital = false;
       }
       break;
+#ifdef PBL_COLOR
+    case KEY_COLOR_HH:
+      colorint = t->value->int32;
+      if(colorint >= 0x0 && colorint <= 0xFFFFFF) conf.color_hour_hand = GColorFromHEX(colorint);
+      break;
 
+    case KEY_COLOR_MH:
+      colorint = t->value->int32;
+      if(colorint >= 0x0 && colorint <= 0xFFFFFF) conf.color_minute_hand = GColorFromHEX(colorint);
+      break;
+
+    case KEY_COLOR_HM:
+      colorint = t->value->int32;
+      if(colorint >= 0x0 && colorint <= 0xFFFFFF) conf.color_hour_markers = GColorFromHEX(colorint);
+      break;
+
+    case KEY_COLOR_WB:
+      colorint = t->value->int32;
+      if(colorint >= 0x0 && colorint <= 0xFFFFFF) conf.color_watchface_background = GColorFromHEX(colorint);
+      break;
+
+    case KEY_COLOR_WO:
+      colorint = t->value->int32;
+      if(colorint >= 0x0 && colorint <= 0xFFFFFF) conf.color_watchface_outline = GColorFromHEX(colorint);
+      break;
+
+    case KEY_COLOR_SB:
+      colorint = t->value->int32;
+      if(colorint >= 0x0 && colorint <= 0xFFFFFF) conf.color_surround_background = GColorFromHEX(colorint);
+      break;
+#endif
     default:
-      APP_LOG(APP_LOG_LEVEL_ERROR, "Key %d not recognized!", (int)t->key);
+      APP_LOG(APP_LOG_LEVEL_ERROR, "Key %d not recognized (or not a color watch)!", (int)t->key);
       break;
     }
 
@@ -333,12 +365,39 @@ static void inbox_dropped_callback(AppMessageResult reason, void *context) {
   APP_LOG(APP_LOG_LEVEL_ERROR, "Inbox Message dropped!");
 }
 
+static void convertconfig() {
+  int confbytes = 0;
+  appConfig newconf;
+  confbytes = persist_read_data(KEY_CONFDAT, &conf, sizeof(conf)); // load saved config
+  if(confbytes <= 1) { // this should never happen, but just in case...
+    APP_LOG(APP_LOG_LEVEL_WARNING, "Read config ver %i, bytes: %i corrupt! Load defaults...", confver, confbytes);
+    load_defaults(); // load defaults because config was corrupt
+  } else {
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Read old config ver %i, bytes: %i", confver, confbytes);
+    switch(confver) {
+      case 1:
+        newconf = conf;
+        newconf.color_watchface_background = conf.color_watchface_outline;
+        newconf.color_watchface_outline = conf.color_watchface_background;
+      break;
+      
+      default:
+        newconf = conf;
+    }
+    confver = CURRENT_CONFVER; // set config version to current version after conversion
+    persist_write_int(KEY_CONFVER, confver); // save new config version
+    confbytes = persist_write_data(KEY_CONFDAT, &newconf, sizeof(newconf)); // save new converted config
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Wrote converted config ver %i, bytes: %i", confver, confbytes);    
+  }
+}
+
 static void init() {
   // Check if we have stored configuration data, otherwise set defaults
   int confbytes = 0;
-  if(persist_exists(KEY_CONFVER)) confver = persist_read_int(KEY_CONFVER); // future use, config version
-  else persist_write_int(KEY_CONFVER, confver); // future use, config version
+  if(persist_exists(KEY_CONFVER)) confver = persist_read_int(KEY_CONFVER); // current config version
+  else persist_write_int(KEY_CONFVER, confver); // config version didn't exist, write one
   if(persist_exists(KEY_CONFDAT)) { // See if there already is configuration data
+    if(confver < CURRENT_CONFVER) convertconfig();
     confbytes = persist_read_data(KEY_CONFDAT, &conf, sizeof(conf)); // load saved config
     if(confbytes != (int)sizeof(conf)) { // this should never happen, but just in case...
       APP_LOG(APP_LOG_LEVEL_WARNING, "Read config ver %i, bytes: %i ! Load defaults...", confver, confbytes);
@@ -347,7 +406,7 @@ static void init() {
   } else {
     load_defaults(); // load defaults because we have no existing configuration
     confbytes = persist_write_data(KEY_CONFDAT, &conf, sizeof(conf)); // save config
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Wrote config ver %i, bytes: %i", confver, confbytes);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Wrote default config ver %i, bytes: %i", confver, confbytes);
   }
 
   srand(time(NULL));

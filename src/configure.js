@@ -9,12 +9,13 @@ Pebble.addEventListener("showConfiguration",
 Pebble.addEventListener('webviewclosed', function(e) {
     var configuration = JSON.parse(decodeURIComponent(e.response));
     console.log('Configuration window returned: ', JSON.stringify(configuration));
-    
+
     // Send to Pebble
-//    Pebble.sendAppMessage({ "KEY_COLOR_HH": configuration.color_hh });
-//    Pebble.sendAppMessage({ "KEY_COLOR_MH": configuration.color_mh });
-//    Pebble.sendAppMessage({ "KEY_COLOR_WO": configuration.color_wo });
-//    Pebble.sendAppMessage({ "KEY_COLOR_WB": configuration.color_wb });
-//    Pebble.sendAppMessage({ "KEY_COLOR_SB": configuration.color_sb });
-    Pebble.sendAppMessage({ "KEY_DIGITIME": configuration.digitime });
+    Pebble.sendAppMessage({ "KEY_COLOR_HH": parseInt(configuration.color_hh.substring(1,7),16),
+                            "KEY_COLOR_MH": parseInt(configuration.color_mh.substring(1,7),16),
+                            "KEY_COLOR_HM": parseInt(configuration.color_hm.substring(1,7),16),
+                            "KEY_COLOR_WB": parseInt(configuration.color_wb.substring(1,7),16),
+                            "KEY_COLOR_WO": parseInt(configuration.color_wo.substring(1,7),16),
+                            "KEY_COLOR_SB": parseInt(configuration.color_sb.substring(1,7),16),
+                            "KEY_DIGITIME": configuration.digitime });
 });
