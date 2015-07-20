@@ -23,8 +23,10 @@ const uint32_t KEY_CONFDAT = 52668711; // data - configuration data
 #define KEY_COLOR_WO 5
 #define KEY_COLOR_SB 6
 #define KEY_DIGITIME 7
+#define KEY_HM_COUNT 8
+#define KEY_BT_STATS 9
 
-#define CURRENT_CONFVER 2 // MUST CHANGE THIS if struct below changes!
+#define CURRENT_CONFVER 3 // MUST CHANGE THIS if struct below changes!
   
 typedef struct {
   GColor color_hour_hand;
@@ -34,17 +36,17 @@ typedef struct {
   GColor color_watchface_outline;
   GColor color_surround_background;
   bool display_digital;
+  int8_t hour_markers_count; // conf v3
+  bool display_bt_status; // conf v3
 // } __attribute__((__packed__)) appConfig;  // if needed as config grows
 } appConfig;
-
-appConfig conf;
 
 typedef struct {
   int hours;
   int minutes;
 } Time;
 
-#ifndef PBL_COLOR
+#if !PBL_COLOR
 void graphics_context_set_stroke_width(struct GContext *ctx, int width) {
   ;
 }

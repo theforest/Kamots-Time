@@ -1,12 +1,14 @@
 {
     "appKeys": {
+        "KEY_BT_STATS": 9,
         "KEY_COLOR_HH": 1,
         "KEY_COLOR_HM": 3,
         "KEY_COLOR_MH": 2,
         "KEY_COLOR_SB": 6,
         "KEY_COLOR_WB": 4,
         "KEY_COLOR_WO": 5,
-        "KEY_DIGITIME": 7
+        "KEY_DIGITIME": 7,
+        "KEY_HM_COUNT": 8
     },
     "capabilities": [
         "configurable"
@@ -31,7 +33,7 @@
         "basalt"
     ],
     "uuid": "6930038e-f881-44c5-8822-9e32066049df",
-    "versionLabel": "1.2",
+    "versionLabel": "1.3",
     "watchapp": {
         "watchface": true
     }

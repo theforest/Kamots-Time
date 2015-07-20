@@ -31,6 +31,7 @@ int battery_level = 100;
 bool battery_charging = false;
 char text_date[] = "28", text_day[] = "Wed", text_time[] = "23:59";
 int confver = 0;
+appConfig conf;
 
 int map(int x, int in_min, int in_max, int out_min, int out_max) { // Borrowed from Arduino
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -63,24 +64,28 @@ static void animate(int duration, int delay, AnimationImplementation *implementa
 
 /************************************ UI **************************************/
 
-static void load_defaults() {
+static appConfig load_defaults() { // fill the default configuration values
+  appConfig defaultconf;
   #ifndef PBL_COLOR
-  conf.color_hour_hand = GColorBlack; // Default colors, well, black and white
-  conf.color_minute_hand = GColorBlack;
-  conf.color_hour_markers = GColorBlack;
-  conf.color_watchface_background = GColorWhite;
-  conf.color_watchface_outline = GColorBlack;
-  conf.color_surround_background = GColorClear;
-  conf.display_digital = true; // Default DO displaying digital time
+  defaultconf.color_hour_hand = GColorBlack; // Default colors, well, black and white
+  defaultconf.color_minute_hand = GColorBlack;
+  defaultconf.color_hour_markers = GColorBlack;
+  defaultconf.color_watchface_background = GColorWhite;
+  defaultconf.color_watchface_outline = GColorBlack;
+  defaultconf.color_surround_background = GColorClear;
+  defaultconf.display_digital = true; // Default DO displaying digital time
   #else
-  conf.color_hour_hand = GColorRed; // Default colors
-  conf.color_minute_hand = GColorBlue;
-  conf.color_hour_markers = GColorDarkGreen;
-  conf.color_watchface_background = GColorWhite;
-  conf.color_watchface_outline = GColorBlack;
-  conf.color_surround_background = GColorDarkGreen;
-  conf.display_digital = false; // Default not displaying digital time
+  defaultconf.color_hour_hand = GColorRed; // Default colors
+  defaultconf.color_minute_hand = GColorBlue;
+  defaultconf.color_hour_markers = GColorDarkGreen;
+  defaultconf.color_watchface_background = GColorWhite;
+  defaultconf.color_watchface_outline = GColorBlack;
+  defaultconf.color_surround_background = GColorDarkGreen;
+  defaultconf.display_digital = false; // Default not displaying digital time
   #endif
+  defaultconf.hour_markers_count = 12; // Show all hour markers by default
+  defaultconf.display_bt_status = false; // Default not displaying bluetooth status
+  return defaultconf;
 }
 
 static void handle_battery(BatteryChargeState charge_state) {
@@ -296,9 +301,10 @@ static void hands_update(Animation *anim, AnimationProgress dist_normalized) {
   layer_mark_dirty(s_clock_layer);
 }
 
-static void inbox_received_callback(DictionaryIterator *iterator, void *context) {  
-  APP_LOG(APP_LOG_LEVEL_INFO, "Inbox message received");
-  char digitime[4];
+static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
+  APP_LOG(APP_LOG_LEVEL_INFO, "Inbox received %d bytes", (unsigned int)dict_size(iterator));
+  char onoff[4];
+  int8_t hm_count = 12;
 #ifdef PBL_COLOR
   int32_t colorint = 0;
 #endif
@@ -312,9 +318,9 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
     // Which key was received?
     switch(t->key) {
     case KEY_DIGITIME:
-      strncpy(digitime, t->value->cstring, sizeof(digitime));
+      strncpy(onoff, t->value->cstring, sizeof(onoff));
 
-      if (strcmp(digitime, "on") == 0) {
+      if (strcmp(onoff, "on") == 0) {
         conf.display_digital = true;
       } else {
         conf.display_digital = false;
@@ -350,9 +356,36 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
       colorint = t->value->int32;
       if(colorint >= 0x0 && colorint <= 0xFFFFFF) conf.color_surround_background = GColorFromHEX(colorint);
       break;
+#else
+    case KEY_COLOR_HH:
+    case KEY_COLOR_MH:
+    case KEY_COLOR_HM:
+    case KEY_COLOR_WB:
+    case KEY_COLOR_WO:
+    case KEY_COLOR_SB:
+      // nothing to do
+      break;
 #endif
+    case KEY_HM_COUNT:
+      hm_count = t->value->int8;
+      if(hm_count == 12) conf.hour_markers_count = 12;
+      if(hm_count == 4) conf.hour_markers_count = 4;
+      if(hm_count == 1) conf.hour_markers_count = 1;
+      break;
+      
+    case KEY_BT_STATS:
+      strncpy(onoff, t->value->cstring, sizeof(onoff));
+
+      if (strcmp(onoff, "on") == 0) {
+        conf.display_bt_status = true;
+      } else {
+        conf.display_bt_status = false;
+      }
+      break;
+
+
     default:
-      APP_LOG(APP_LOG_LEVEL_ERROR, "Key %d not recognized (or not a color watch)!", (int)t->key);
+      APP_LOG(APP_LOG_LEVEL_ERROR, "Key %d not recognized!", (int)t->key);
       break;
     }
 
@@ -362,27 +395,33 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
 }
 
 static void inbox_dropped_callback(AppMessageResult reason, void *context) {
-  APP_LOG(APP_LOG_LEVEL_ERROR, "Inbox Message dropped!");
-}
+  APP_LOG(APP_LOG_LEVEL_ERROR, "Inbox Message dropped! Err: %d", reason);
+} 
 
 static void convertconfig() {
   int confbytes = 0;
-  appConfig newconf;
+  appConfig newconf = load_defaults();
+  appConfig defaultconf = newconf;
   confbytes = persist_read_data(KEY_CONFDAT, &conf, sizeof(conf)); // load saved config
   if(confbytes <= 1) { // this should never happen, but just in case...
     APP_LOG(APP_LOG_LEVEL_WARNING, "Read config ver %i, bytes: %i corrupt! Load defaults...", confver, confbytes);
-    load_defaults(); // load defaults because config was corrupt
+    conf = load_defaults(); // load defaults because config was corrupt
   } else {
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Read old config ver %i, bytes: %i", confver, confbytes);
+    newconf = conf;
     switch(confver) {
       case 1:
-        newconf = conf;
         newconf.color_watchface_background = conf.color_watchface_outline;
         newconf.color_watchface_outline = conf.color_watchface_background;
-      break;
+        // no break here, continue with conversion
+
+      case 2:
+        newconf.hour_markers_count = defaultconf.hour_markers_count;
+        newconf.display_bt_status = defaultconf.display_bt_status;
+        break;
       
       default:
-        newconf = conf;
+        newconf = defaultconf;
     }
     confver = CURRENT_CONFVER; // set config version to current version after conversion
     persist_write_int(KEY_CONFVER, confver); // save new config version
@@ -395,16 +434,19 @@ static void init() {
   // Check if we have stored configuration data, otherwise set defaults
   int confbytes = 0;
   if(persist_exists(KEY_CONFVER)) confver = persist_read_int(KEY_CONFVER); // current config version
-  else persist_write_int(KEY_CONFVER, confver); // config version didn't exist, write one
+  else {
+    confver = CURRENT_CONFVER;
+    persist_write_int(KEY_CONFVER, confver); // config version didn't exist, write one
+  }
   if(persist_exists(KEY_CONFDAT)) { // See if there already is configuration data
     if(confver < CURRENT_CONFVER) convertconfig();
     confbytes = persist_read_data(KEY_CONFDAT, &conf, sizeof(conf)); // load saved config
     if(confbytes != (int)sizeof(conf)) { // this should never happen, but just in case...
       APP_LOG(APP_LOG_LEVEL_WARNING, "Read config ver %i, bytes: %i ! Load defaults...", confver, confbytes);
-      load_defaults(); // load defaults because config was corrupt
+      conf = load_defaults(); // load defaults because config was corrupt
     } else APP_LOG(APP_LOG_LEVEL_DEBUG, "Read config ver %i, bytes: %i", confver, confbytes);
   } else {
-    load_defaults(); // load defaults because we have no existing configuration
+    conf = load_defaults(); // load defaults because we have no existing configuration
     confbytes = persist_write_data(KEY_CONFDAT, &conf, sizeof(conf)); // save config
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Wrote default config ver %i, bytes: %i", confver, confbytes);
   }
@@ -431,7 +473,7 @@ static void init() {
   app_message_register_inbox_dropped(inbox_dropped_callback);
   
   // Open AppMessage
-  app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
+  app_message_open(APP_MESSAGE_INBOX_SIZE_MINIMUM, APP_MESSAGE_OUTBOX_SIZE_MINIMUM);
 
   // Prepare animations
   AnimationImplementation radius_impl = {
