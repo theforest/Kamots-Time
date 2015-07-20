@@ -1,5 +1,5 @@
 # Kamots-Time
-A watchface for Pebble Time
+A watchface for Pebble with fully user-customizable colors right from your phone!
 
 Copyright 2015 kamotswind
 
