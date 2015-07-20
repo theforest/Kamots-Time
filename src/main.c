@@ -1,6 +1,6 @@
 /*
 *** Kamots Time ***
-Original code based from: https://github.com/pebble-examples/ks-clock-face
+Original code based from: https://github.com/pebble-examples/ks-clock-face/commit/38d1daa29ab4354f592ac274206b95ba648bec63
 ...which is Copyright (C) 2015 Pebble Technology and licensed under the MIT License
 
 Changes and additions by kamotswind...
