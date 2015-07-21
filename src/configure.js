@@ -1,4 +1,16 @@
+/* Kamots Time Pebble JS
+Copyright 2015 kamotswind
 
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+except in compliance with the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+either express or implied. See the License for the specific language governing permissions and
+limitations under the License.
+*/
 Pebble.addEventListener("showConfiguration",
   function(e) {
     Pebble.openURL("http://theforest.us/kamotstimecfg.php");
@@ -21,7 +33,7 @@ Pebble.addEventListener('webviewclosed', function(e) {
 });
 
 function sendconfcolors(conf) {
-    var runtime = Date.now() / 1000;
+    var runtime = Date.now() / 100;
     Pebble.sendAppMessage({ "C_HH": parseInt(conf.color_hh.substring(1,7),16),
                             "C_MH": parseInt(conf.color_mh.substring(1,7),16),
                             "C_HM": parseInt(conf.color_hm.substring(1,7),16),
@@ -38,7 +50,7 @@ function sendconfcolors(conf) {
 }
 
 function sendconfoptions(conf) {
-    var runtime = Date.now() / 1000;
+    var runtime = Date.now() / 100;
     var digitime = 0;
     var bt_stats = 0;
     var digitime_string = conf.digitime;

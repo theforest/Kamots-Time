@@ -211,11 +211,15 @@ static void main_update_proc(Layer *layer, GContext *ctx) {
 static void battery_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_stroke_color(ctx, conf.color_watchface_outline);
   graphics_context_set_fill_color(ctx, conf.color_watchface_outline);
-  graphics_draw_round_rect(ctx, GRect(0, 0, 20, 9), 1); // Outside of battery
-  graphics_fill_rect(ctx, GRect(20, 3, 2, 3), 0, 0); // Battery positive terminal
-  if(battery_level <= 20) graphics_context_set_fill_color(ctx, battery_charging ? COLOR_FALLBACK(GColorBlue, GColorBlack):COLOR_FALLBACK(GColorDarkCandyAppleRed, GColorBlack));
-  else graphics_context_set_fill_color(ctx, battery_charging ? COLOR_FALLBACK(GColorBlue, GColorBlack):conf.color_watchface_outline);
-  graphics_fill_rect(ctx, GRect(2, 2, map(battery_level, 0, 100, 1, 16), 5), 0, 0); // Inside of battery
+  graphics_draw_round_rect(ctx, GRect(12, 3, 20, 9), 1); // Outside of battery
+  graphics_fill_rect(ctx, GRect(32, 6, 2, 3), 0, 0); // Battery positive terminal
+  graphics_fill_rect(ctx, GRect(14, 5, map(battery_level, 0, 100, 1, 16), 5), 0, 0); // Inside of battery
+  if(battery_charging) {
+    gpath_draw_filled(ctx, s_path_bolt_ptr); // lightning bolt
+  } else if(battery_level <= 20) {
+    graphics_fill_rect(ctx, GRect(7, 2, 2, 6), 0, 0); // exclamation mark
+    graphics_fill_rect(ctx, GRect(7, 10, 2, 2), 0, 0);
+  }
 }
 
 static void window_appear(Window *window) {
@@ -226,17 +230,16 @@ static void window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect window_bounds = layer_get_bounds(window_layer);
 
+  s_path_bolt_ptr = gpath_create(&BOLT_PATH_INFO); // Create charging indicator bolt
+  gpath_rotate_to(s_path_bolt_ptr, TRIG_MAX_ANGLE / 360 * 15);
+  gpath_move_to(s_path_bolt_ptr, GPoint(6, -9));
+
   // background layer
   s_background_layer = text_layer_create(window_bounds); // Entire screen
   text_layer_set_text(s_background_layer, " ");
   text_layer_set_background_color(s_background_layer, conf.color_surround_background);
   text_layer_set_text_color(s_background_layer, conf.color_watchface_outline);
   layer_add_child(window_layer, text_layer_get_layer(s_background_layer));
-  
-  // Battery status layer
-  s_battery_layer = layer_create(GRect(118, 3, 24, 10)); // Top right-hand of screen, 24x10 size
-  layer_set_update_proc(s_battery_layer, battery_update_proc);
-  layer_add_child(window_layer, s_battery_layer);
 
   // digital time
   if(conf.display_digital) {
@@ -255,6 +258,11 @@ static void window_load(Window *window) {
   layer_add_child(window_layer, s_clock_layer);
   GRect clock_bounds = layer_get_bounds(s_clock_layer);
   s_center = grect_center_point(&clock_bounds);
+
+  // Battery status layer
+  s_battery_layer = layer_create(GRect(106, 0, 38, 12)); // Top right-hand of screen, 38x12 size
+  layer_set_update_proc(s_battery_layer, battery_update_proc);
+  layer_add_child(window_layer, s_battery_layer);
 
   // day layer
   s_day_layer = text_layer_create(GRect(2, -4, 30, 18)); // Top left-hand of screen, 30x18 size
@@ -377,7 +385,6 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
         conf.display_bt_status = false;
       }
       break;
-
 
     default:
       APP_LOG(APP_LOG_LEVEL_ERROR, "Key %d not recognized!", (int)t->key);
