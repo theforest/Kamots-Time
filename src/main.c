@@ -303,8 +303,7 @@ static void hands_update(Animation *anim, AnimationProgress dist_normalized) {
 
 static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
   APP_LOG(APP_LOG_LEVEL_INFO, "Inbox received %d bytes", (unsigned int)dict_size(iterator));
-  char onoff[4];
-  int8_t hm_count = 12;
+  int8_t hm_count = 0;
 #ifdef PBL_COLOR
   int32_t colorint = 0;
 #endif
@@ -317,66 +316,62 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
 
     // Which key was received?
     switch(t->key) {
-    case KEY_DIGITIME:
-      strncpy(onoff, t->value->cstring, sizeof(onoff));
-
-      if (strcmp(onoff, "on") == 0) {
+    case D_DT:
+      if (t->value->int8 == 1) {
         conf.display_digital = true;
       } else {
         conf.display_digital = false;
       }
       break;
 #ifdef PBL_COLOR
-    case KEY_COLOR_HH:
+    case C_HH:
       colorint = t->value->int32;
       if(colorint >= 0x0 && colorint <= 0xFFFFFF) conf.color_hour_hand = GColorFromHEX(colorint);
       break;
 
-    case KEY_COLOR_MH:
+    case C_MH:
       colorint = t->value->int32;
       if(colorint >= 0x0 && colorint <= 0xFFFFFF) conf.color_minute_hand = GColorFromHEX(colorint);
       break;
 
-    case KEY_COLOR_HM:
+    case C_HM:
       colorint = t->value->int32;
       if(colorint >= 0x0 && colorint <= 0xFFFFFF) conf.color_hour_markers = GColorFromHEX(colorint);
       break;
 
-    case KEY_COLOR_WB:
+    case C_WB:
       colorint = t->value->int32;
       if(colorint >= 0x0 && colorint <= 0xFFFFFF) conf.color_watchface_background = GColorFromHEX(colorint);
       break;
 
-    case KEY_COLOR_WO:
+    case C_WO:
       colorint = t->value->int32;
       if(colorint >= 0x0 && colorint <= 0xFFFFFF) conf.color_watchface_outline = GColorFromHEX(colorint);
       break;
 
-    case KEY_COLOR_SB:
+    case C_SB:
       colorint = t->value->int32;
       if(colorint >= 0x0 && colorint <= 0xFFFFFF) conf.color_surround_background = GColorFromHEX(colorint);
       break;
 #else
-    case KEY_COLOR_HH:
-    case KEY_COLOR_MH:
-    case KEY_COLOR_HM:
-    case KEY_COLOR_WB:
-    case KEY_COLOR_WO:
-    case KEY_COLOR_SB:
+    case C_HH:
+    case C_MH:
+    case C_HM:
+    case C_WB:
+    case C_WO:
+    case C_SB:
       // nothing to do
       break;
 #endif
-    case KEY_HM_COUNT:
+    case HM_C:
       hm_count = t->value->int8;
       if(hm_count == 12) conf.hour_markers_count = 12;
       if(hm_count == 4) conf.hour_markers_count = 4;
       if(hm_count == 1) conf.hour_markers_count = 1;
       break;
       
-    case KEY_BT_STATS:
-      strncpy(onoff, t->value->cstring, sizeof(onoff));
-
-      if (strcmp(onoff, "on") == 0) {
+    case D_BT:
+      if (t->value->int8 == 1) {
         conf.display_bt_status = true;
       } else {
         conf.display_bt_status = false;
