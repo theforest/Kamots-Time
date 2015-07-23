@@ -11,15 +11,23 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
 either express or implied. See the License for the specific language governing permissions and
 limitations under the License.
 */
-Pebble.addEventListener("showConfiguration",
-  function(e) {
-    Pebble.openURL("http://theforest.us/kamotstimecfg.php");
-    console.log('Opened configuration window.');
-  }
-);
 
 var colretries = 4;
 var optretries = 4;
+var KEY_CONFVER = 52668701; // configuration version ID (no this has nothing to do with the keys in main.h)
+var KEY_CONFDAT = 52668711; // configuration data (using the same key IDs for localStorage just for my own OCD)
+
+Pebble.addEventListener("showConfiguration",
+  function(e) {
+    var url = "http://theforest.us/kamotstimecfg.php#";
+    if (checkforlocalstorage()) if (parseInt(localStorage.getItem(KEY_CONFVER),10) == 3) {
+      url = url + encodeURIComponent(localStorage.getItem(KEY_CONFDAT));
+      console.log('Loaded config from localStorage.');
+    }
+    Pebble.openURL(url);
+    console.log('Opened configuration window.');
+  }
+);
 
 Pebble.addEventListener('webviewclosed', function(e) {
     var configuration = JSON.parse(decodeURIComponent(e.response));
@@ -30,6 +38,14 @@ Pebble.addEventListener('webviewclosed', function(e) {
     optretries = 0;
     sendconfcolors(configuration);
     sendconfoptions(configuration);
+  
+    // Pebble.showSimpleNotificationOnPebble("Kamots Time", "Watchface settings changed! Press the back button.");
+
+    if (checkforlocalstorage()) {
+      // Store in localStorage for retrieval later
+      localStorage.setItem(KEY_CONFVER, "3"); // placeholder, still need to write version upgrade code
+      localStorage.setItem(KEY_CONFDAT, JSON.stringify(configuration)); // save configuration
+    }
 });
 
 function sendconfcolors(conf) {
@@ -69,3 +85,15 @@ function sendconfoptions(conf) {
                             }
                            );
 }
+
+function checkforlocalstorage() {
+    var lstest = 'thingsandjunk';
+    try {
+        localStorage.setItem(lstest, lstest);
+        localStorage.removeItem(lstest);
+        return true;
+    } catch(e) {
+        return false;
+    }
+}
+
