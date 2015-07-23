@@ -204,7 +204,10 @@ static void main_update_proc(Layer *layer, GContext *ctx) {
     hour_marker = (GPoint) {
     .x = (int16_t)(sin_lookup(marker_angle) * (int32_t)(s_radius - 7) / TRIG_MAX_RATIO) + s_center.x,
     .y = (int16_t)(-cos_lookup(marker_angle) * (int32_t)(s_radius - 7) / TRIG_MAX_RATIO) + s_center.y,};
-    graphics_fill_circle(ctx, hour_marker, 4);
+    if((conf.hour_markers_count == 12) || ((conf.hour_markers_count == 1) && (i == 12)) ||
+      ((conf.hour_markers_count == 4) && (i==12 || i==9 || i==6 || i==3))){
+      graphics_fill_circle(ctx, hour_marker, 4);    
+    }
   }
 }
 

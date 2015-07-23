@@ -97,12 +97,12 @@ static void graphics_draw_line2(GContext *ctx, GPoint p0, GPoint p1, int8_t widt
 static const GPathInfo BOLT_PATH_INFO = {
   .num_points = 6,
   .points = (GPoint []) {
-    {4.25, 0.0},
-    {4.5, 13.95},
-    {8.0, 13.95},
-    {2.25, 26.0},
-    {4.5, 16.0},
-    {0.0, 16.0}
+    {(float)4.5, (float)0.0},
+    {(float)4.5, (float)13.95},
+    {(float)8.0, (float)13.95},
+    {(float)2.25, (float)26.0},
+    {(float)4.5, (float)16.0},
+    {(float)0.0, (float)16.0}
   }
 };
 static GPath *s_path_bolt_ptr = NULL;
