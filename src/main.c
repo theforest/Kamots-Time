@@ -148,8 +148,13 @@ static void main_update_proc(Layer *layer, GContext *ctx) {
 
   // Draw outline
   graphics_context_set_stroke_color(ctx, conf.color_watchface_outline);
+#ifdef PBL_COLOR
   graphics_context_set_stroke_width(ctx, 2);
+#endif
   graphics_draw_circle(ctx, s_center, s_radius);
+#ifndef PBL_COLOR
+  graphics_draw_circle(ctx, s_center, s_radius-1); // draw an extra circle on B&W Pebble.
+#endif
 
   // Don't use current time while animating
   Time mode_time = (s_animating) ? s_anim_time : s_last_time;
