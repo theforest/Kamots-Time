@@ -106,4 +106,19 @@ static const GPathInfo BOLT_PATH_INFO = {
   }
 };
 static GPath *s_path_bolt_ptr = NULL;
+
+static const GPathInfo BT_PATH_INFO = {
+  .num_points = 8,
+  .points = (GPoint []) {
+    {0, 0},
+    {3, 3},
+    {-3, 9},
+    {0, 6},
+    {-3, 3},
+    {3, 9},
+    {0, 12},
+    {0, 6}
+  }
+};
+static GPath *s_path_bt_ptr = NULL;
 #endif

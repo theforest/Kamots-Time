@@ -20,7 +20,7 @@ limitations under the License.
 #include "main.h"
 
 static Window *s_main_window;
-static Layer *s_clock_layer, *s_battery_layer;
+static Layer *s_clock_layer, *s_battery_layer, *s_bt_layer;
 static TextLayer *s_date_layer, *s_day_layer, *s_digitime_layer, *s_background_layer;
 
 static GPoint s_center;
@@ -28,7 +28,7 @@ static Time s_last_time, s_anim_time;
 static int s_radius = 0;
 static bool s_animating = false;
 int battery_level = 100;
-bool battery_charging = false;
+bool battery_charging = false, bt_connected = true;
 char text_date[] = "28", text_day[] = "Wed", text_time[] = "23:59";
 int confver = 0;
 appConfig conf;
@@ -95,6 +95,17 @@ static void handle_battery(BatteryChargeState charge_state) {
   // Redraw
   if(s_battery_layer) {
     layer_mark_dirty(s_battery_layer);
+  }
+}
+
+void handle_bt(bool connected) {
+  if (connected) { // this seems silly now, but vibrate notifications coming later
+    bt_connected = true;
+  } else {
+    bt_connected = false;
+  }
+  if(s_bt_layer) {
+    layer_mark_dirty(s_bt_layer);
   }
 }
 
@@ -230,6 +241,17 @@ static void battery_update_proc(Layer *layer, GContext *ctx) {
   }
 }
 
+static void bt_update_proc(Layer *layer, GContext *ctx) {
+    graphics_context_set_stroke_width(ctx, 1);
+  if(bt_connected) {
+    graphics_context_set_stroke_color(ctx, conf.color_watchface_outline);
+    gpath_draw_outline(ctx, s_path_bt_ptr);  // bluetooth symbol
+  } else {
+    graphics_context_set_stroke_color(ctx, conf.color_surround_background);
+    gpath_draw_outline(ctx, s_path_bt_ptr);  // bluetooth symbol    
+  }
+}
+
 static void window_appear(Window *window) {
   window_set_background_color(window, conf.color_watchface_background);
 }
@@ -242,7 +264,7 @@ static void window_load(Window *window) {
   gpath_rotate_to(s_path_bolt_ptr, TRIG_MAX_ANGLE / 360 * 15);
   gpath_move_to(s_path_bolt_ptr, GPoint(6, -9));
 
-  // background layer
+  // background layer (hopefully someday window background color will work and this can go away)
   s_background_layer = text_layer_create(window_bounds); // Entire screen
   text_layer_set_text(s_background_layer, " ");
   text_layer_set_background_color(s_background_layer, conf.color_surround_background);
@@ -271,6 +293,17 @@ static void window_load(Window *window) {
   s_battery_layer = layer_create(GRect(106, 0, 38, 12)); // Top right-hand of screen, 38x12 size
   layer_set_update_proc(s_battery_layer, battery_update_proc);
   layer_add_child(window_layer, s_battery_layer);
+  
+  // Bluetooth status layer
+  if(conf.display_bt_status) {
+    s_path_bt_ptr = gpath_create(&BT_PATH_INFO); // Create bluetooth indicator symbol
+    s_bt_layer = layer_create(GRect(134, 14, 7, 13)); // Top right-hand of screen, 7x13 size
+    gpath_move_to(s_path_bt_ptr, GPoint(3, 0));
+    layer_set_update_proc(s_bt_layer, bt_update_proc);
+    layer_add_child(window_layer, s_bt_layer);
+    if (bluetooth_connection_service_peek()) bt_connected = true;
+    else bt_connected = false;
+  }
 
   // day layer
   s_day_layer = text_layer_create(GRect(2, -4, 30, 18)); // Top left-hand of screen, 30x18 size
@@ -296,6 +329,7 @@ static void window_unload(Window *window) {
   text_layer_destroy(s_background_layer);
   layer_destroy(s_clock_layer);
   layer_destroy(s_battery_layer);
+  layer_destroy(s_bt_layer);
 }
 
 /*********************************** App **************************************/
@@ -481,6 +515,7 @@ static void init() {
   battery_state_service_subscribe(handle_battery);
   app_message_register_inbox_received(inbox_received_callback);
   app_message_register_inbox_dropped(inbox_dropped_callback);
+  if(conf.display_bt_status) bluetooth_connection_service_subscribe(handle_bt);
   
   // Open AppMessage
   app_message_open(APP_MESSAGE_INBOX_SIZE_MINIMUM, 16);
@@ -506,6 +541,7 @@ static void deinit() {
   // Unsubscribe from events
   tick_timer_service_unsubscribe();
   battery_state_service_unsubscribe();
+  bluetooth_connection_service_unsubscribe();
   app_message_deregister_callbacks();
   window_destroy(s_main_window);
 }
