@@ -19,7 +19,12 @@ var KEY_CONFDAT = 52668711; // configuration data (using the same key IDs for lo
 
 Pebble.addEventListener("showConfiguration",
   function(e) {
-    var url = "http://theforest.us/kamotstimecfg.php#";
+    var url = "http://theforest.us/kamotstimecfgCOLOR.php#";
+    if(Pebble.getActiveWatchInfo) {
+      var watch = Pebble.getActiveWatchInfo();
+      if(watch.platform == 'aplite') url = "http://theforest.us/kamotstimecfgBW.php#";
+    }
+
     if (checkforlocalstorage()) if (parseInt(localStorage.getItem(KEY_CONFVER),10) == 3) {
       url = url + encodeURIComponent(localStorage.getItem(KEY_CONFDAT));
       console.log('Loaded config from localStorage.');
@@ -32,7 +37,7 @@ Pebble.addEventListener("showConfiguration",
 Pebble.addEventListener('webviewclosed', function(e) {
     var configuration = JSON.parse(decodeURIComponent(e.response));
     console.log('Configuration window returned: ', JSON.stringify(configuration));
-  
+
     // Send to Pebble (with retries)
     colretries = 0;
     optretries = 0;
