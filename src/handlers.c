@@ -21,11 +21,12 @@ limitations under the License.
 
 char text_date[] = "28", text_day[] = "Wed", text_time[] = "23:59";
 int battery_level = 100;
-bool battery_charging = false, bt_connected = true;
+bool battery_charging = false, bt_connected = true, power_connected = false;
 Time last_time;
   
 void handle_battery(BatteryChargeState charge_state) {
-  battery_charging = charge_state.is_charging; // TODO is_plugged should be handled as well
+  battery_charging = charge_state.is_charging;
+  power_connected = charge_state.is_plugged;
   battery_level = charge_state.charge_percent;
 
   // Redraw

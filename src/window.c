@@ -21,16 +21,18 @@ limitations under the License.
 
 GPath *path_bolt_ptr = NULL;
 GPath *path_bt_ptr = NULL;
+GPath *path_plug_ptr = NULL;
 GPoint center;
+
 const GPathInfo BOLT_PATH_INFO = {
   .num_points = 6,
   .points = (GPoint []) {
-    {(float)4.5, (float)0.0},
+    {(float)4.5, 0},
     {(float)4.5, (float)13.95},
-    {(float)8.0, (float)13.95},
-    {(float)2.25, (float)26.0},
-    {(float)4.5, (float)16.0},
-    {(float)0.0, (float)16.0}
+    {8, (float)13.95},
+    {(float)2.25, 26},
+    {(float)4.5, 16},
+    {0, 16}
   }
 };
 
@@ -46,7 +48,34 @@ const GPathInfo BT_PATH_INFO = {
     {0, 12},
     {0, 6}
   }
-};  
+};
+
+const GPathInfo PLUG_PATH_INFO = {
+  .num_points = 20,
+  .points = (GPoint []) {
+    {0, 3},
+    {2, 3},
+    {2, 0},
+    {3, 0},
+    {3, 3},
+    {6, 3},
+    {6, 0},
+    {7, 0},
+    {7, 3},
+    {9, 3},
+    {9, 7},
+    {8, 7},
+    {8, 8},
+    {5, 8},
+    {5, 12},
+    {4, 12},
+    {4, 8},
+    {1, 8},
+    {1, 7},
+    {0, 7}
+  }
+};
+
 void window_appear(Window *window) {
   window_set_background_color(window, conf.color_watchface_background);
 }
@@ -58,6 +87,8 @@ void window_load(Window *window) {
   path_bolt_ptr = gpath_create(&BOLT_PATH_INFO); // Create charging indicator bolt
   gpath_rotate_to(path_bolt_ptr, TRIG_MAX_ANGLE / 360 * 15);
   gpath_move_to(path_bolt_ptr, GPoint(6, -9));
+
+  path_plug_ptr = gpath_create(&PLUG_PATH_INFO); // Create plugged in indicator
 
   // background layer (hopefully someday window background color will work and this can go away)
   background_layer = text_layer_create(window_bounds); // Entire screen
@@ -92,8 +123,8 @@ void window_load(Window *window) {
   // Bluetooth status layer
   if(conf.display_bt_status) {
     path_bt_ptr = gpath_create(&BT_PATH_INFO); // Create bluetooth indicator symbol
-    bt_layer = layer_create(GRect(134, 14, 7, 13)); // Top right-hand of screen, 7x13 size
     gpath_move_to(path_bt_ptr, GPoint(3, 0));
+    bt_layer = layer_create(GRect(134, 14, 7, 13)); // Top right-hand of screen, 7x13 size
     layer_set_update_proc(bt_layer, bt_update_proc);
     layer_add_child(window_layer, bt_layer);
     if (bluetooth_connection_service_peek()) bt_connected = true;
@@ -120,6 +151,7 @@ void window_load(Window *window) {
 void window_unload(Window *window) {
   gpath_destroy(path_bolt_ptr);
   gpath_destroy(path_bt_ptr);
+  gpath_destroy(path_plug_ptr);
   text_layer_destroy(date_layer);
   text_layer_destroy(day_layer);
   text_layer_destroy(digitime_layer);

@@ -113,6 +113,9 @@ void battery_update_proc(Layer *layer, GContext *ctx) {
   graphics_fill_rect(ctx, GRect(14, 5, map(battery_level, 0, 100, 1, 16), 5), 0, 0); // Inside of battery
   if(battery_charging) {
     gpath_draw_filled(ctx, path_bolt_ptr); // lightning bolt
+  } else if(power_connected) {
+    gpath_draw_outline(ctx, path_plug_ptr); // power plug
+    graphics_fill_rect(ctx, GRect(1, 4, 8, 4), 0, 0);
   } else if(battery_level <= 20) {
     graphics_fill_rect(ctx, GRect(7, 2, 2, 6), 0, 0); // exclamation mark
     graphics_fill_rect(ctx, GRect(7, 10, 2, 2), 0, 0);
