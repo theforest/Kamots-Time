@@ -53,6 +53,7 @@ void tick_handler(struct tm *tick_time, TimeUnits changed) {
   last_time.hours = tick_time->tm_hour;
   last_time.hours -= (last_time.hours > 12) ? 12 : 0;
   last_time.minutes = tick_time->tm_min;
+  last_time.seconds = tick_time->tm_sec;
 
   // Change day/date displays
   strftime(text_date, sizeof(text_date), "%d", tick_time);

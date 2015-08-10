@@ -59,6 +59,8 @@ static void load() {
   // Subscribe to events
   battery_state_service_subscribe(handle_battery);
   if(conf.display_bt_status) bluetooth_connection_service_subscribe(handle_bt);
+  if(conf.display_second_hand) tick_timer_service_subscribe(SECOND_UNIT, tick_handler);
+  else tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
 }  
 
 void reload() {
@@ -118,7 +120,6 @@ static void init() {
   load(); // load main watchface
   
   // Subscribe to events
-  tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
   app_message_register_inbox_received(inbox_received_callback);
   app_message_register_inbox_dropped(inbox_dropped_callback);
   

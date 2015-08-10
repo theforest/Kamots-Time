@@ -21,7 +21,7 @@ limitations under the License.
 #ifndef MAIN_H
 #define MAIN_H
   
-typedef struct {
+typedef struct { // MUST change CURRENT_CONFVER in configure.c if this changes
   GColor color_hour_hand;
   GColor color_minute_hand;
   GColor color_hour_markers;
@@ -31,12 +31,16 @@ typedef struct {
   bool display_digital;
   int8_t hour_markers_count; // conf v3
   bool display_bt_status; // conf v3
+  GColor color_second_hand; // conf v4
+  bool display_second_hand; // conf v4
+  bool digital_as_zulu; // conf v4
 // } __attribute__((__packed__)) appConfig;  // if needed as config grows
 } appConfig;
 
 typedef struct {
-  int hours;
-  int minutes;
+  uint8_t hours;
+  uint8_t minutes;
+  uint8_t seconds;
 } Time;
 
 // functions

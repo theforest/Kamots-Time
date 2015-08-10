@@ -33,12 +33,14 @@ uint8_t config_changed = 0;
 #define D_DT 7
 #define HM_C 8
 #define D_BT 9
+#define C_SH 10
+#define D_SH 11
 
 // Persistant storage keys
 const uint32_t KEY_CONFVER = 52668701; // int - configuration version ID
 const uint32_t KEY_CONFDAT = 52668711; // data - configuration data
 
-const uint8_t CURRENT_CONFVER = 3; // MUST CHANGE THIS if appConfig struct changes
+const uint8_t CURRENT_CONFVER = 4; // MUST CHANGE THIS if appConfig struct changes
 
 appConfig load_defaults() { // fill the default configuration values
   appConfig defaultconf;
@@ -50,6 +52,7 @@ appConfig load_defaults() { // fill the default configuration values
   defaultconf.color_watchface_outline = GColorBlack;
   defaultconf.color_surround_background = GColorClear;
   defaultconf.display_digital = true; // Default DO displaying digital time
+  defaultconf.color_second_hand = GColorBlack;
   #else
   defaultconf.color_hour_hand = GColorRed; // Default colors
   defaultconf.color_minute_hand = GColorBlue;
@@ -58,9 +61,12 @@ appConfig load_defaults() { // fill the default configuration values
   defaultconf.color_watchface_outline = GColorBlack;
   defaultconf.color_surround_background = GColorDarkGreen;
   defaultconf.display_digital = false; // Default not displaying digital time
+  defaultconf.color_second_hand = GColorBlack;
   #endif
   defaultconf.hour_markers_count = 12; // Show all hour markers by default
   defaultconf.display_bt_status = false; // Default not displaying bluetooth status
+  defaultconf.display_second_hand = false;
+  defaultconf.digital_as_zulu = false;
   return defaultconf;
 }
 
@@ -97,6 +103,11 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
       if(colorint >= 0x0 && colorint <= 0xFFFFFF) conf.color_minute_hand = GColorFromHEX(colorint);
       break;
 
+    case C_SH:
+      colorint = t->value->int32;
+      if(colorint >= 0x0 && colorint <= 0xFFFFFF) conf.color_second_hand = GColorFromHEX(colorint);
+      break;
+
     case C_HM:
       colorint = t->value->int32;
       if(colorint >= 0x0 && colorint <= 0xFFFFFF) conf.color_hour_markers = GColorFromHEX(colorint);
@@ -128,7 +139,12 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
       colorint = t->value->int32;
       if(colorint == 0xFFFFFF) conf.color_minute_hand = GColorWhite;
       if(colorint == 0x000000) conf.color_minute_hand = GColorBlack;
+      break;
 
+    case C_SH:
+      colorint = t->value->int32;
+      if(colorint == 0xFFFFFF) conf.color_second_hand = GColorWhite;
+      if(colorint == 0x000000) conf.color_second_hand = GColorBlack;
       break;
 
     case C_HM:
@@ -172,6 +188,14 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
       config_changed++;
       break;
 
+    case D_SH:
+      if (t->value->int8 == 1) {
+        conf.display_second_hand = true;
+      } else {
+        conf.display_second_hand = false;
+      }
+      config_changed++;
+      break;
     default:
       APP_LOG(APP_LOG_LEVEL_ERROR, "Key %d not recognized!", (int)t->key);
       break;
@@ -210,6 +234,12 @@ void convertconfig() {
       case 2:
         newconf.hour_markers_count = defaultconf.hour_markers_count;
         newconf.display_bt_status = defaultconf.display_bt_status;
+        // no break here, continue with conversion
+
+      case 3:
+        newconf.color_second_hand = defaultconf.color_second_hand;
+        newconf.display_second_hand = defaultconf.display_second_hand;
+        newconf.digital_as_zulu = defaultconf.digital_as_zulu;
         break;
       
       default:

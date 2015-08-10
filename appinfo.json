@@ -4,10 +4,12 @@
         "C_HM": 3,
         "C_MH": 2,
         "C_SB": 6,
+        "C_SH": 10,
         "C_WB": 4,
         "C_WO": 5,
         "D_BT": 9,
         "D_DT": 7,
+        "D_SH": 11,
         "HM_C": 8
     },
     "capabilities": [

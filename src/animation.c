@@ -61,6 +61,7 @@ void radius_update(Animation *anim, AnimationProgress dist_normalized) {
 void hands_update(Animation *anim, AnimationProgress dist_normalized) {
   anim_time.hours = anim_percentage(dist_normalized, hours_to_minutes(last_time.hours));
   anim_time.minutes = anim_percentage(dist_normalized, last_time.minutes);
+  if(conf.display_second_hand) anim_time.seconds = anim_percentage(dist_normalized, last_time.seconds);
 
   layer_mark_dirty(clock_layer);
 }

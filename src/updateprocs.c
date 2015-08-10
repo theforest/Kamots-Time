@@ -49,6 +49,8 @@ void clock_update_proc(Layer *layer, GContext *ctx) {
   Time mode_time = (animating) ? anim_time : last_time;
 
   // Adjust for minutes through the hour
+  float second_angle = 0;
+  if(conf.display_second_hand) { second_angle = TRIG_MAX_ANGLE * mode_time.seconds / 60; }
   float minute_angle = TRIG_MAX_ANGLE * mode_time.minutes / 60;
   float hour_angle;
   if(animating) {
@@ -61,9 +63,16 @@ void clock_update_proc(Layer *layer, GContext *ctx) {
   hour_angle += (minute_angle / TRIG_MAX_ANGLE) * (TRIG_MAX_ANGLE / 12);
 
   // Plot hands
+  GPoint second_hand = (GPoint) { .x = (int16_t)0, .y = (int16_t)0 };
+  if(conf.display_second_hand) {
+    second_hand = (GPoint) {
+      .x = (int16_t)(sin_lookup(second_angle) * (int32_t)(radius - HAND_MARGIN) / TRIG_MAX_RATIO) + center.x,
+      .y = (int16_t)(-cos_lookup(second_angle) * (int32_t)(radius - HAND_MARGIN) / TRIG_MAX_RATIO) + center.y,
+    };
+  }
   GPoint minute_hand = (GPoint) {
-    .x = (int16_t)(sin_lookup(TRIG_MAX_ANGLE * mode_time.minutes / 60) * (int32_t)(radius - HAND_MARGIN) / TRIG_MAX_RATIO) + center.x,
-    .y = (int16_t)(-cos_lookup(TRIG_MAX_ANGLE * mode_time.minutes / 60) * (int32_t)(radius - HAND_MARGIN) / TRIG_MAX_RATIO) + center.y,
+    .x = (int16_t)(sin_lookup(minute_angle) * (int32_t)(radius - HAND_MARGIN) / TRIG_MAX_RATIO) + center.x,
+    .y = (int16_t)(-cos_lookup(minute_angle) * (int32_t)(radius - HAND_MARGIN) / TRIG_MAX_RATIO) + center.y,
   };
   GPoint hour_hand = (GPoint) {
     .x = (int16_t)(sin_lookup(hour_angle) * (int32_t)(radius - (2 * HAND_MARGIN)) / TRIG_MAX_RATIO) + center.x,
@@ -87,8 +96,15 @@ void clock_update_proc(Layer *layer, GContext *ctx) {
     #else
     graphics_draw_line2(ctx, center, hour_hand, 6);
     #endif
-  } 
-  
+  }
+  if(conf.display_second_hand) {
+    graphics_context_set_stroke_width(ctx, 1);
+    graphics_context_set_stroke_color(ctx, conf.color_second_hand);
+    if(radius > 2 * HAND_MARGIN) {
+      graphics_draw_line(ctx, center, second_hand);
+    }
+  }
+
   // Draw hour markers
   float marker_angle;
   GPoint hour_marker;
