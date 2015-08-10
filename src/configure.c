@@ -35,6 +35,7 @@ uint8_t config_changed = 0;
 #define D_BT 9
 #define C_SH 10
 #define D_SH 11
+#define DT_Z 12
 
 // Persistant storage keys
 const uint32_t KEY_CONFVER = 52668701; // int - configuration version ID

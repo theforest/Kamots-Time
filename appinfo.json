@@ -7,6 +7,7 @@
         "C_SH": 10,
         "C_WB": 4,
         "C_WO": 5,
+        "DT_Z": 12,
         "D_BT": 9,
         "D_DT": 7,
         "D_SH": 11,
@@ -35,7 +36,7 @@
         "basalt"
     ],
     "uuid": "6930038e-f881-44c5-8822-9e32066049df",
-    "versionLabel": "2.0",
+    "versionLabel": "2.1",
     "watchapp": {
         "watchface": true
     }
