@@ -197,6 +197,16 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
       }
       config_changed++;
       break;
+
+    case DT_Z:
+      if (t->value->int8 == 1) {
+        conf.digital_as_zulu = true;
+      } else {
+        conf.digital_as_zulu = false;
+      }
+      config_changed++;
+      break;
+
     default:
       APP_LOG(APP_LOG_LEVEL_ERROR, "Key %d not recognized!", (int)t->key);
       break;

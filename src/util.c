@@ -1,6 +1,8 @@
 #include "util.h"
 #include "main.h"
 
+uint8_t stroke_width = 1;
+
 int map(int x, int in_min, int in_max, int out_min, int out_max) { // Borrowed from Arduino
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
@@ -10,12 +12,13 @@ int hours_to_minutes(int hours_out_of_12) {
 }
 
 #if !PBL_COLOR
-void graphics_context_set_stroke_width(struct GContext *ctx, int width) {
-  ;
+void graphics_context_set_stroke_width(struct GContext *ctx, uint8_t width) {
+  stroke_width = width;
 }
 // Draw line with width. From: http://forums.getpebble.com/discussion/comment/132110/#Comment_132110
 // (Based on code found here http://rosettacode.org/wiki/Bitmap/Bresenham's_line_algorithm#C)
-void graphics_draw_line2(GContext *ctx, GPoint p0, GPoint p1, int8_t width) {
+void graphics_draw_line2(GContext *ctx, GPoint p0, GPoint p1) {
+  uint8_t width = stroke_width;
   // Order points so that lower x is first
   int16_t x0, x1, y0, y1;
   if (p0.x <= p1.x) {

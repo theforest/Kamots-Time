@@ -86,7 +86,7 @@ void clock_update_proc(Layer *layer, GContext *ctx) {
     #ifdef PBL_COLOR
     graphics_draw_line(ctx, center, minute_hand);
     #else
-    graphics_draw_line2(ctx, center, minute_hand, 4);
+    graphics_draw_line2(ctx, center, minute_hand);
     #endif
   }
   graphics_context_set_stroke_color(ctx, conf.color_hour_hand);
@@ -94,7 +94,8 @@ void clock_update_proc(Layer *layer, GContext *ctx) {
     #ifdef PBL_COLOR
     graphics_draw_line(ctx, center, hour_hand);
     #else
-    graphics_draw_line2(ctx, center, hour_hand, 6);
+    graphics_context_set_stroke_width(ctx, 6);
+    graphics_draw_line2(ctx, center, hour_hand);
     #endif
   }
   if(conf.display_second_hand) {

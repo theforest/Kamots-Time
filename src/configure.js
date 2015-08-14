@@ -76,17 +76,21 @@ function sendconfoptions(conf) {
     var digitime = 0;
     var bt_stats = 0;
     var sechand = 0;
+    var dtzulu = 0;
     var digitime_string = conf.digitime;
     var bt_stats_string = conf.bt_stats;
     var sechand_string = conf.sechand;
+    var dtzulu_string = conf.dtzulu;
     if(digitime_string.match(/^on/)) digitime = 1;
     if(bt_stats_string.match(/^on/)) bt_stats = 1;
     if(sechand_string.match(/^on/)) sechand = 1;
+    if(dtzulu_string.match(/^on/)) dtzulu = 1;
 
     Pebble.sendAppMessage({ "HM_C": parseInt(conf.hm_count,10),
                             "D_DT": digitime,
                             "D_BT": bt_stats,
-                            "D_SH": sechand },
+                            "D_SH": sechand,
+                            "DT_Z": dtzulu },
                             function(e) {
                               console.log("Send options successful @", runtime);
                             }, function(e) {

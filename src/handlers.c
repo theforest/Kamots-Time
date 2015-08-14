@@ -19,7 +19,7 @@ limitations under the License.
 
 #include "main.h"
 
-char text_date[] = "28", text_day[] = "Wed", text_time[] = "23:59";
+char text_date[] = "28", text_day[] = "Wed", text_time[] = "23z59";
 int battery_level = 100;
 bool battery_charging = false, bt_connected = true, power_connected = false;
 Time last_time;
@@ -61,8 +61,12 @@ void tick_handler(struct tm *tick_time, TimeUnits changed) {
   
   if(conf.display_digital) {
     // Change digital time display (if enabled)
-    strftime(text_time, sizeof(text_time), "%H:%M", tick_time);
-  }
+    if(conf.digital_as_zulu) {
+      time_t temptime = mktime(tick_time);
+      struct tm *zulu_time = gmtime(&temptime);
+      strftime(text_time, sizeof(text_time), "%Hz%M", zulu_time);
+    } else strftime(text_time, sizeof(text_time), "%R", tick_time);
+  }       
 
   // Redraw
   if(clock_layer) {
