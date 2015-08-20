@@ -2,6 +2,7 @@
 build/
 .codelite/
 .tern-project
+.tern-port
 Makefile
 *.mk
 *.project
