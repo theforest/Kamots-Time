@@ -1,2 +1,10 @@
 .lock-waf_linux2_build
 build/
+.codelite/
+.tern-project
+Makefile
+*.mk
+*.project
+*.workspace
+*.workspace.*
+
