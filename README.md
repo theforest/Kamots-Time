@@ -1,6 +1,8 @@
 # Kamots-Time
 A watchface for Pebble with fully user-customizable colors right from your phone!
 
+http://apps.getpebble.com/en_US/application/55948917327b5a1a0d0000a0
+
 Copyright 2015 kamotswind
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
