@@ -111,3 +111,20 @@ function checkforlocalstorage() {
     }
 }
 
+var sendtopebble = function() {
+  var stuff = {"D_WX": false}; // TODO weather stuff
+  console.log("Sending stuff to pebble...");
+  Pebble.sendAppMessage(stuff);
+};
+
+Pebble.addEventListener("appmessage",
+                        function(e) {
+                          console.log("Got message from watch..."); // TODO trigger weather update if requested
+                        });
+
+Pebble.addEventListener("ready", function(e) {
+  console.log("phonecomm.js ready!");
+
+  setInterval(sendtopebble, 1800000); // 30 minutes
+  sendtopebble();
+});
