@@ -33,12 +33,15 @@ uint8_t config_changed = 0;
 #define C_SH 10
 #define D_SH 11
 #define DT_Z 12
+#define D_WX 13
+#define WX_T 14
+#define WX_C 15
 
 // Persistant storage keys
 const uint32_t KEY_CONFVER = 52668701; // int - configuration version ID
 const uint32_t KEY_CONFDAT = 52668711; // data - configuration data
 
-const uint8_t CURRENT_CONFVER = 4; // MUST CHANGE THIS if appConfig struct changes
+const uint8_t CURRENT_CONFVER = 5; // MUST CHANGE THIS if appConfig struct changes
 
 appConfig load_defaults() { // fill the default configuration values
   appConfig defaultconf;
@@ -65,6 +68,7 @@ appConfig load_defaults() { // fill the default configuration values
   defaultconf.display_bt_status = false; // Default not displaying bluetooth status
   defaultconf.display_second_hand = false;
   defaultconf.digital_as_zulu = false;
+  defaultconf.display_weather = false;
   return defaultconf;
 }
 
