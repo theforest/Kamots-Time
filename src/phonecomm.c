@@ -36,6 +36,7 @@ uint8_t config_changed = 0;
 #define D_WX 13
 #define WX_T 14
 #define WX_C 15
+#define WX_A 16
 
 // Persistant storage keys
 const uint32_t KEY_CONFVER = 52668701; // int - configuration version ID

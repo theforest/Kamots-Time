@@ -124,7 +124,7 @@ static void init() {
   app_message_register_inbox_dropped(inbox_dropped_callback);
   
   // Open AppMessage
-  app_message_open(APP_MESSAGE_INBOX_SIZE_MINIMUM, 16);
+  app_message_open(APP_MESSAGE_INBOX_SIZE_MINIMUM, 32);
 
   // Prepare animations
   AnimationImplementation radius_impl = {

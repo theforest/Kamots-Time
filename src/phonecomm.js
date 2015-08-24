@@ -1,4 +1,8 @@
 /* Kamots Time Pebble JS
+Weather portions based from: https://github.com/pebble/pebble-sdk-examples/tree/4c5181c8a8b291cc90fd5f2b9465089851564059/pebblekit-js/weather/src/js
+...which is Copyright (C) 2013 Pebble Technology and licensed under the MIT License
+
+Modifications to weather portions and all other code...
 Copyright 2015 kamotswind
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
@@ -111,20 +115,135 @@ function checkforlocalstorage() {
     }
 }
 
-var sendtopebble = function() {
-  var stuff = {"D_WX": false}; // TODO weather stuff
-  console.log("Sending stuff to pebble...");
-  Pebble.sendAppMessage(stuff);
+function convertIconToGraphic(icon) {
+  var ret = 0;
+  switch(icon) {
+    case "01d":
+      ret = 1;
+      break;
+    case "01n":
+      ret = 101;
+      break;
+    case "02d":
+      ret = 2;
+      break;
+    case "02n":
+      ret = 102;
+      break;
+    case "03d":
+      ret = 3;
+      break;
+    case "03n":
+      ret = 103;
+      break;
+    case "04d":
+      ret = 4;
+      break;
+    case "04n":
+      ret = 104;
+      break;
+    case "09d":
+      ret = 9;
+      break;
+    case "09n":
+      ret = 109;
+      break;
+    case "10d":
+      ret = 10;
+      break;
+    case "10n":
+      ret = 110;
+      break;
+    case "11d":
+      ret = 11;
+      break;
+    case "11n":
+      ret = 111;
+      break;
+    case "13d":
+      ret = 13;
+      break;
+    case "13n":
+      ret = 113;
+      break;
+    case "50d":
+      ret = 50;
+      break;
+    case "50n":
+      ret = 150;
+      break;
+    default:
+      ret = 0;
+  }
+  return ret;
+}
+
+function fetchWeather(latitude, longitude) {
+  var req = new XMLHttpRequest();
+  req.open('GET', "http://api.openweathermap.org/data/2.5/weather?" +
+    "lat=" + latitude + "&lon=" + longitude + "&cnt=1&units=imperial", true);
+  req.onload = function(e) {
+    if (req.readyState == 4) {
+      if(req.status == 200) {
+        console.log(req.responseText);
+
+        var response = JSON.parse(req.responseText);
+        var temperature = response.main.temp;
+        var icon = response.weather[0].icon;
+        var city = response.name;
+        var timestamp = response.dt;
+        console.log(temperature);
+        console.log(icon);
+        console.log(city);
+        console.log(timestamp);
+        var graphic = convertIconToGraphic(icon);
+        console.log(graphic);
+        var runtime = Date.now() / 100;
+        Pebble.sendAppMessage({ // Send current conditions and temp
+          "WX_C":graphic,
+          "WX_T":temperature,
+          "WX_A":timestamp},
+          function(e) {
+            console.log("Send weather successful @", runtime);
+          }, function(e) {
+            console.log("Send weather failed! @", runtime);
+          }
+        );
+
+      } else {
+        console.log("HTTP Error " + req.status);
+      }
+    }
+  }
+  req.send(null);
+}
+
+function locationSuccess(pos) {
+  var coordinates = pos.coords;
+  fetchWeather(coordinates.latitude, coordinates.longitude);
+}
+
+function locationError(err) {
+  console.warn("location error (" + err.code + "): " + err.message);
+  Pebble.sendAppMessage({
+    "WX_C":"0",
+    "WX_T":"??.?"
+  });
+}
+
+var startWeatherFetch = function() {
+  var locationOptions = { "timeout": 15000, "maximumAge": 300000 }; 
+  locationWatcher = window.navigator.geolocation.getCurrentPosition(locationSuccess, locationError, locationOptions);
 };
 
 Pebble.addEventListener("appmessage",
                         function(e) {
                           console.log("Got message from watch..."); // TODO trigger weather update if requested
-                        });
+});
 
 Pebble.addEventListener("ready", function(e) {
   console.log("phonecomm.js ready!");
 
-  setInterval(sendtopebble, 1800000); // 30 minutes
-  sendtopebble();
+  setInterval(startWeatherFetch, 1800000); // 30 minutes
+  startWeatherFetch();
 });
