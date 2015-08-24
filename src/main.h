@@ -44,6 +44,12 @@ typedef struct {
   uint8_t seconds;
 } Time;
 
+typedef struct {
+  uint8_t conditions;
+  float temperature;
+  uint32_t timestamp;
+} Weather;
+
 // functions
 extern void clock_update_proc(Layer *layer, GContext *ctx);
 extern void battery_update_proc(Layer *layer, GContext *ctx);
@@ -66,13 +72,13 @@ extern void hands_update(Animation *anim, AnimationProgress dist_normalized);
 // variables
 extern Window *main_window;
 extern Layer *clock_layer, *battery_layer, *bt_layer;
-extern TextLayer *date_layer, *day_layer, *digitime_layer, *background_layer;
+extern TextLayer *date_layer, *day_layer, *digitime_layer, *background_layer, *weather_t_layer, *weather_c_layer;
 extern appConfig conf;
 extern int confver;
 extern Time last_time;
 extern Time anim_time;
 extern bool animating;
-extern char text_date[], text_day[], text_time[];
+extern char text_date[], text_day[], text_time[], text_wx_c[], text_wx_t[];
 extern int battery_level;
 extern bool battery_charging, bt_connected, power_connected;
 extern GPath *path_bolt_ptr, *path_bt_ptr, *path_plug_ptr;

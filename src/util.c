@@ -11,6 +11,33 @@ int hours_to_minutes(int hours_out_of_12) {
   return (int)(float)(((float)hours_out_of_12 / 12.0F) * 60.0F);
 }
 
+void ftoa(char* str, double val, int precision) { // From http://forums.getpebble.com/discussion/comment/73084/#Comment_73084
+  //  start with positive/negative
+  if (val < 0) {
+    *(str++) = '-';
+    val = -val;
+  }
+  //  integer value
+  snprintf(str, 12, "%d", (int) val);
+  str += strlen(str);
+  val -= (int) val;
+  //  decimals
+  if ((precision > 0) && (val >= .00001)) {
+    //  add period
+    *(str++) = '.';
+    //  loop through precision
+    for (int i = 0;  i < precision;  i++)
+      if (val > 0) {
+        val *= 10;
+        *(str++) = '0' + (int) (val + ((i == precision - 1) ? .5 : 0));
+        val -= (int) val;
+      } else
+        break;
+  }
+  //  terminate
+  *str = '\0';
+}
+
 #if !PBL_COLOR
 void graphics_context_set_stroke_width(struct GContext *ctx, uint8_t width) {
   stroke_width = width;

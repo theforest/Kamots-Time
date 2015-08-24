@@ -21,7 +21,7 @@ limitations under the License.
 
 Window *main_window;
 Layer *clock_layer, *battery_layer, *bt_layer;
-TextLayer *date_layer, *day_layer, *digitime_layer, *background_layer;
+TextLayer *date_layer, *day_layer, *digitime_layer, *background_layer, *weather_t_layer, *weather_c_layer;
 #define ANIMATION_DURATION 400
 #define ANIMATION_DELAY    500
 

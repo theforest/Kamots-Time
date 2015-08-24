@@ -15,28 +15,31 @@ limitations under the License.
 */
 
 #include "main.h"
-  
+#include "util.h"
+
 int confver = 0;
 appConfig conf;
 uint8_t config_changed = 0;
+Weather wx;
+char text_wx_t[] = "???.??", text_wx_c[] = "???";
 
 // Phone communication keys
-#define C_HH 1
-#define C_MH 2
-#define C_HM 3
-#define C_WB 4
-#define C_WO 5
-#define C_SB 6
-#define D_DT 7
-#define HM_C 8
-#define D_BT 9
-#define C_SH 10
-#define D_SH 11
-#define DT_Z 12
-#define D_WX 13
-#define WX_T 14
-#define WX_C 15
-#define WX_A 16
+#define C_HH 1 // Color Hour Hand
+#define C_MH 2 // Color Minute Hand
+#define C_HM 3 // Color Hour Marks
+#define C_WB 4 // Color Watchface Background
+#define C_WO 5 // Color Watchface Outline (also includes text/icons in surround)
+#define C_SB 6 // Color Surround Background
+#define D_DT 7 // Display Digital time
+#define HM_C 8 // Hour Marks Count
+#define D_BT 9 // Display Bluetooth
+#define C_SH 10 // Color Second Hand
+#define D_SH 11 // Display Second Hand
+#define DT_Z 12 // Digital Time is Zulu
+#define D_WX 13 // Display Weather
+#define WX_T 14 // Weather Temperature
+#define WX_C 15 // Weather Conditions
+#define WX_A 16 // Weather received At time
 
 // Persistant storage keys
 const uint32_t KEY_CONFVER = 52668701; // int - configuration version ID
@@ -77,6 +80,7 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
   APP_LOG(APP_LOG_LEVEL_INFO, "Inbox received %d bytes", (unsigned int)dict_size(iterator));
   int8_t hm_count = 0;
   int32_t colorint = 0;
+  bool wxupdate = false;
 
   // Read first item
   Tuple *t = dict_read_first(iterator);
@@ -209,6 +213,40 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
       config_changed++;
       break;
 
+    case D_WX:
+      if (t->value->int8 == 1) {
+        conf.display_weather = true;
+      } else {
+        conf.display_weather = false;
+      }
+      config_changed++;
+      break;
+
+    case WX_T:
+      if(t->value->int16 > -2000) {
+        wx.temperature = (float)t->value->int16 / 10.0;
+      }
+      wxupdate = true;
+      break;
+
+    case WX_C:
+      if(t->value->uint8 > 0) {
+        wx.conditions = t->value->uint8;
+      } else {
+        wx.conditions = 0;
+      }
+      wxupdate = true;
+      break;
+
+    case WX_A:
+      if(t->value->uint32 > 100000) {
+        wx.timestamp = t->value->uint32;
+      } else {
+        wx.timestamp = 0;
+      }
+      wxupdate = true;
+      break;
+
     default:
       APP_LOG(APP_LOG_LEVEL_ERROR, "Key %d not recognized!", (int)t->key);
       break;
@@ -220,6 +258,16 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
   if(config_changed > 1) { // configuration changed, we need to reinitialize
     config_changed = 0;
     reload(); // reload everything
+  }
+  if(wxupdate && conf.display_weather) {
+    ftoa(text_wx_t,wx.temperature,1);
+    snprintf(text_wx_c, sizeof(text_wx_c), "%d", wx.conditions);
+    if(weather_t_layer) {
+      layer_mark_dirty(text_layer_get_layer(weather_t_layer)); // These layers are supposed to auto-update, but it is slow
+    }
+    if(weather_c_layer) {
+      layer_mark_dirty(text_layer_get_layer(weather_c_layer));
+    }
   }
 }
 

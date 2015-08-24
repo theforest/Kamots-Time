@@ -81,20 +81,24 @@ function sendconfoptions(conf) {
     var bt_stats = 0;
     var sechand = 0;
     var dtzulu = 0;
+    var weather = 0;
     var digitime_string = conf.digitime;
     var bt_stats_string = conf.bt_stats;
     var sechand_string = conf.sechand;
     var dtzulu_string = conf.dtzulu;
+    var weather_string = conf.weather;
     if(digitime_string.match(/^on/)) digitime = 1;
     if(bt_stats_string.match(/^on/)) bt_stats = 1;
     if(sechand_string.match(/^on/)) sechand = 1;
     if(dtzulu_string.match(/^on/)) dtzulu = 1;
+    if(weather_string.match(/^on/)) weather = 1;
 
     Pebble.sendAppMessage({ "HM_C": parseInt(conf.hm_count,10),
                             "D_DT": digitime,
                             "D_BT": bt_stats,
                             "D_SH": sechand,
-                            "DT_Z": dtzulu },
+                            "DT_Z": dtzulu,
+                            "D_WX": weather },
                             function(e) {
                               console.log("Send options successful @", runtime);
                             }, function(e) {
@@ -188,16 +192,16 @@ function fetchWeather(latitude, longitude) {
         console.log(req.responseText);
 
         var response = JSON.parse(req.responseText);
-        var temperature = response.main.temp;
+        var temperature = Math.round(response.main.temp * 10);
         var icon = response.weather[0].icon;
         var city = response.name;
         var timestamp = response.dt;
-        console.log(temperature);
+        /* console.log(temperature);
         console.log(icon);
         console.log(city);
-        console.log(timestamp);
+        console.log(timestamp); */
         var graphic = convertIconToGraphic(icon);
-        console.log(graphic);
+        // console.log(graphic);
         var runtime = Date.now() / 100;
         Pebble.sendAppMessage({ // Send current conditions and temp
           "WX_C":graphic,
@@ -227,7 +231,8 @@ function locationError(err) {
   console.warn("location error (" + err.code + "): " + err.message);
   Pebble.sendAppMessage({
     "WX_C":"0",
-    "WX_T":"??.?"
+    "WX_T":"-2000",
+    "WX_A":"0"
   });
 }
 

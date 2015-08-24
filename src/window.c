@@ -107,7 +107,26 @@ void window_load(Window *window) {
     text_layer_set_font(digitime_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
     layer_add_child(window_layer, text_layer_get_layer(digitime_layer));
   }
-  
+
+  // Weather layers
+  if(conf.display_weather) {
+    weather_t_layer = text_layer_create(GRect(0, 148, 40, 19)); // Bottom left of screen
+    text_layer_set_text(weather_t_layer, text_wx_t);
+    text_layer_set_background_color(weather_t_layer, conf.color_surround_background);
+    text_layer_set_text_color(weather_t_layer, conf.color_watchface_outline);
+    text_layer_set_text_alignment(weather_t_layer, GTextAlignmentCenter);
+    text_layer_set_font(weather_t_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+    layer_add_child(window_layer, text_layer_get_layer(weather_t_layer));
+
+    weather_c_layer = text_layer_create(GRect(108, 148, 40, 19)); // Bottom right of screen
+    text_layer_set_text(weather_c_layer, text_wx_c);
+    text_layer_set_background_color(weather_c_layer, conf.color_surround_background);
+    text_layer_set_text_color(weather_c_layer, conf.color_watchface_outline);
+    text_layer_set_text_alignment(weather_c_layer, GTextAlignmentCenter);
+    text_layer_set_font(weather_c_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+    layer_add_child(window_layer, text_layer_get_layer(weather_c_layer));
+  }
+
   // Main clock layer
   clock_layer = layer_create(GRect(-1, 12, 144, 142));
   layer_set_update_proc(clock_layer, clock_update_proc);
