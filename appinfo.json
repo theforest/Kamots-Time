@@ -13,11 +13,12 @@
         "D_SH": 11,
         "D_WX": 13,
         "HM_C": 8,
+        "WX_A": 16,
         "WX_C": 15,
-        "WX_T": 14,
-	"WX_A": 16
+        "WX_T": 14
     },
     "capabilities": [
+        "location",
         "configurable"
     ],
     "companyName": "kamotswind",

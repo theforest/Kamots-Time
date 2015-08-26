@@ -86,7 +86,7 @@ function sendconfoptions(conf) {
     var bt_stats_string = conf.bt_stats;
     var sechand_string = conf.sechand;
     var dtzulu_string = conf.dtzulu;
-    var weather_string = conf.weather;
+    var weather_string = conf.wx;
     if(digitime_string.match(/^on/)) digitime = 1;
     if(bt_stats_string.match(/^on/)) bt_stats = 1;
     if(sechand_string.match(/^on/)) sechand = 1;
@@ -218,7 +218,7 @@ function fetchWeather(latitude, longitude) {
         console.log("HTTP Error " + req.status);
       }
     }
-  }
+  };
   req.send(null);
 }
 
@@ -238,7 +238,7 @@ function locationError(err) {
 
 var startWeatherFetch = function() {
   var locationOptions = { "timeout": 15000, "maximumAge": 300000 }; 
-  locationWatcher = window.navigator.geolocation.getCurrentPosition(locationSuccess, locationError, locationOptions);
+  var locationWatcher = window.navigator.geolocation.getCurrentPosition(locationSuccess, locationError, locationOptions);
 };
 
 Pebble.addEventListener("appmessage",

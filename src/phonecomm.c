@@ -256,16 +256,21 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
     // Look for next item
     t = dict_read_next(iterator);
   }
-  if(config_changed > 1) { // configuration changed, we need to reinitialize
-    config_changed = 0;
-    reload(); // reload everything
-  }
-  if(wxupdate && conf.display_weather) {
+
+  if(wxupdate) {
     if(wx.conditions == 0) {
       strncpy(text_wx_t,"???.?",sizeof(text_wx_t));
     } else {
       ftoa(text_wx_t,wx.temperature,1);
     }
+  }
+
+  if(config_changed > 1) { // configuration changed, we need to reinitialize
+    config_changed = 0;
+    reload(); // reload everything
+  }
+
+  if(conf.display_weather && wxupdate) {
     if(weather_t_layer) {
       layer_mark_dirty(text_layer_get_layer(weather_t_layer)); // Text layers are supposed to auto-update, but it is slow
     }
@@ -305,8 +310,12 @@ void convertconfig() {
         newconf.color_second_hand = defaultconf.color_second_hand;
         newconf.display_second_hand = defaultconf.display_second_hand;
         newconf.digital_as_zulu = defaultconf.digital_as_zulu;
-        break;
+        // no break here, continue with conversion
       
+      case 4:
+        newconf.display_weather = defaultconf.display_weather;
+        break;
+
       default:
         newconf = defaultconf;
     }
