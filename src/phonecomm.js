@@ -238,7 +238,7 @@ function locationError(err) {
 
 var startWeatherFetch = function() {
   var locationOptions = { "timeout": 15000, "maximumAge": 300000 }; 
-  var locationWatcher = window.navigator.geolocation.getCurrentPosition(locationSuccess, locationError, locationOptions);
+  navigator.geolocation.getCurrentPosition(locationSuccess, locationError, locationOptions);
 };
 
 Pebble.addEventListener("appmessage",
