@@ -21,7 +21,8 @@ int confver = 0;
 appConfig conf;
 uint8_t config_changed = 0;
 Weather wx;
-char text_wx_t[] = "???.??", text_wx_c[] = "???";
+char text_wx_t[] = "???.?";
+char text_wx_ft[] = "F";
 
 // Phone communication keys
 #define C_HH 1 // Color Hour Hand
@@ -260,13 +261,16 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
     reload(); // reload everything
   }
   if(wxupdate && conf.display_weather) {
-    ftoa(text_wx_t,wx.temperature,1);
-    snprintf(text_wx_c, sizeof(text_wx_c), "%d", wx.conditions);
+    if(wx.conditions == 0) {
+      strncpy(text_wx_t,"???.?",sizeof(text_wx_t));
+    } else {
+      ftoa(text_wx_t,wx.temperature,1);
+    }
     if(weather_t_layer) {
-      layer_mark_dirty(text_layer_get_layer(weather_t_layer)); // These layers are supposed to auto-update, but it is slow
+      layer_mark_dirty(text_layer_get_layer(weather_t_layer)); // Text layers are supposed to auto-update, but it is slow
     }
     if(weather_c_layer) {
-      layer_mark_dirty(text_layer_get_layer(weather_c_layer));
+      layer_mark_dirty(weather_c_layer);
     }
   }
 }

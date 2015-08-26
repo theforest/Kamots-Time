@@ -19,9 +19,6 @@ limitations under the License.
 
 #include "main.h"
 
-Window *main_window;
-Layer *clock_layer, *battery_layer, *bt_layer;
-TextLayer *date_layer, *day_layer, *digitime_layer, *background_layer, *weather_t_layer, *weather_c_layer;
 #define ANIMATION_DURATION 400
 #define ANIMATION_DELAY    500
 
@@ -39,9 +36,12 @@ static void unload() {
   clock_layer = NULL;
   battery_layer = NULL;
   bt_layer = NULL;
+  weather_t_layer = NULL;
+  weather_ft_layer = NULL;
   date_layer = NULL;
   day_layer = NULL;
   digitime_layer = NULL;
+  weather_c_layer = NULL;
   background_layer = NULL;
 }
 
@@ -75,6 +75,9 @@ void reload() {
   if(bt_layer) {
     layer_mark_dirty(bt_layer);
   }
+  if(weather_c_layer) {
+    layer_mark_dirty(weather_c_layer);
+  }
   if(date_layer) {
     layer_mark_dirty(text_layer_get_layer(date_layer));
   }
@@ -83,6 +86,12 @@ void reload() {
   }
   if(digitime_layer) {
     layer_mark_dirty(text_layer_get_layer(digitime_layer));
+  }
+  if(weather_t_layer) {
+    layer_mark_dirty(text_layer_get_layer(weather_t_layer));
+  }
+  if(weather_ft_layer) {
+    layer_mark_dirty(text_layer_get_layer(weather_ft_layer));
   }
   if(background_layer) {
     layer_mark_dirty(text_layer_get_layer(background_layer));

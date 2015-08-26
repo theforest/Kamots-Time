@@ -140,12 +140,104 @@ void battery_update_proc(Layer *layer, GContext *ctx) {
 }
 
 void bt_update_proc(Layer *layer, GContext *ctx) {
-    graphics_context_set_stroke_width(ctx, 1);
+  graphics_context_set_stroke_width(ctx, 1);
   if(bt_connected) {
     graphics_context_set_stroke_color(ctx, conf.color_watchface_outline);
     gpath_draw_outline(ctx, path_bt_ptr);  // bluetooth symbol
   } else {
     graphics_context_set_stroke_color(ctx, conf.color_surround_background);
     gpath_draw_outline(ctx, path_bt_ptr);  // bluetooth symbol    
+  }
+}
+
+void draw_left_rain(GContext *ctx) {
+  graphics_fill_rect(ctx, GRect(4, 18, 2, 3), 0, 0); // Rain, left
+  graphics_fill_rect(ctx, GRect(8, 18, 2, 3), 0, 0); // Rain, left
+  graphics_fill_rect(ctx, GRect(2, 22, 2, 3), 0, 0); // Rain, left
+  graphics_fill_rect(ctx, GRect(6, 22, 2, 3), 0, 0); // Rain, left
+}
+
+void draw_center_rain(GContext *ctx) {
+  graphics_fill_rect(ctx, GRect(12, 18, 2, 3), 0, 0); // Rain, center
+  graphics_fill_rect(ctx, GRect(10, 22, 2, 3), 0, 0); // Rain, center
+
+}
+
+void draw_right_rain(GContext *ctx) {
+  graphics_fill_rect(ctx, GRect(16, 18, 2, 3), 0, 0); // Rain, right
+  graphics_fill_rect(ctx, GRect(20, 18, 2, 3), 0, 0); // Rain, right
+  graphics_fill_rect(ctx, GRect(14, 22, 2, 3), 0, 0); // Rain, right
+  graphics_fill_rect(ctx, GRect(18, 22, 2, 3), 0, 0); // Rain, right
+}
+
+
+void draw_large_cloud(GContext *ctx) {
+  gpath_draw_filled(ctx, path_lcloud_ptr); // large cloud
+}
+
+void draw_small_cloud(GContext *ctx) {
+  gpath_draw_filled(ctx, path_scloud_ptr); // small cloud
+}
+
+void weather_update_proc(Layer *layer, GContext *ctx) {
+  graphics_context_set_stroke_width(ctx, 1);
+  graphics_context_set_stroke_color(ctx, conf.color_watchface_outline);
+  graphics_context_set_fill_color(ctx, conf.color_watchface_outline);
+
+  switch(wx.conditions) {
+    case 1:
+    case 101:
+      graphics_fill_circle(ctx, GPoint(14,12), 10); // large sun/moon
+      break;
+    case 3:
+    case 103:
+      draw_large_cloud(ctx);
+      break;
+    case 4:
+    case 104:
+      draw_large_cloud(ctx);
+      draw_small_cloud(ctx);
+      break;
+    case 9:
+    case 109:
+      draw_large_cloud(ctx);
+      draw_small_cloud(ctx);
+      draw_left_rain(ctx);
+      draw_center_rain(ctx);
+      draw_right_rain(ctx);
+      break;
+    case 10:
+    case 110:
+      draw_large_cloud(ctx);
+      graphics_fill_circle(ctx, GPoint(25,5), 4); // small sun/moon
+      draw_left_rain(ctx);
+      draw_right_rain(ctx);
+      break;
+    case 11:
+    case 111:
+      draw_large_cloud(ctx);
+      draw_small_cloud(ctx);
+      draw_left_rain(ctx);
+      draw_center_rain(ctx);
+      gpath_draw_filled(ctx, path_lightning_ptr); // lightning
+      break;
+    case 13:
+    case 113:
+      draw_large_cloud(ctx);
+      draw_small_cloud(ctx);
+      gpath_move_to(path_snowflake_ptr, GPoint(6, 18));
+      gpath_draw_outline(ctx, path_snowflake_ptr); // snowflake
+      gpath_move_to(path_snowflake_ptr, GPoint(15, 19));
+      gpath_draw_outline(ctx, path_snowflake_ptr); // snowflake
+      break;
+    case 50:
+    case 150:
+      for(int i = 21; i>6; i-=3) {
+        graphics_draw_line(ctx,GPoint(6,i+1),GPoint(10,i));
+        graphics_draw_line(ctx,GPoint(10,i),GPoint(14,i+1));
+        graphics_draw_line(ctx,GPoint(14,i+1),GPoint(18,i));
+        graphics_draw_line(ctx,GPoint(18,i),GPoint(22,i+1));
+      }
+      break;
   }
 }

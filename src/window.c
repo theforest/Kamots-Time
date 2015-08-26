@@ -18,63 +18,12 @@ limitations under the License.
 */
 
 #include "main.h"
+#include "gpath.h"
 
-GPath *path_bolt_ptr = NULL;
-GPath *path_bt_ptr = NULL;
-GPath *path_plug_ptr = NULL;
+Window *main_window;
+Layer *clock_layer, *battery_layer, *bt_layer, *weather_c_layer;
+TextLayer *date_layer, *day_layer, *digitime_layer, *background_layer, *weather_t_layer, *weather_ft_layer;
 GPoint center;
-
-const GPathInfo BOLT_PATH_INFO = {
-  .num_points = 6,
-  .points = (GPoint []) {
-    {(float)4.5, 0},
-    {(float)4.5, (float)13.95},
-    {8, (float)13.95},
-    {(float)2.25, 26},
-    {(float)4.5, 16},
-    {0, 16}
-  }
-};
-
-const GPathInfo BT_PATH_INFO = {
-  .num_points = 8,
-  .points = (GPoint []) {
-    {0, 0},
-    {3, 3},
-    {-3, 9},
-    {0, 6},
-    {-3, 3},
-    {3, 9},
-    {0, 12},
-    {0, 6}
-  }
-};
-
-const GPathInfo PLUG_PATH_INFO = {
-  .num_points = 20,
-  .points = (GPoint []) {
-    {0, 3},
-    {2, 3},
-    {2, 0},
-    {3, 0},
-    {3, 3},
-    {6, 3},
-    {6, 0},
-    {7, 0},
-    {7, 3},
-    {9, 3},
-    {9, 7},
-    {8, 7},
-    {8, 8},
-    {5, 8},
-    {5, 12},
-    {4, 12},
-    {4, 8},
-    {1, 8},
-    {1, 7},
-    {0, 7}
-  }
-};
 
 void window_appear(Window *window) {
   window_set_background_color(window, conf.color_watchface_background);
@@ -108,31 +57,43 @@ void window_load(Window *window) {
     layer_add_child(window_layer, text_layer_get_layer(digitime_layer));
   }
 
-  // Weather layers
-  if(conf.display_weather) {
-    weather_t_layer = text_layer_create(GRect(0, 148, 40, 19)); // Bottom left of screen
-    text_layer_set_text(weather_t_layer, text_wx_t);
-    text_layer_set_background_color(weather_t_layer, conf.color_surround_background);
-    text_layer_set_text_color(weather_t_layer, conf.color_watchface_outline);
-    text_layer_set_text_alignment(weather_t_layer, GTextAlignmentCenter);
-    text_layer_set_font(weather_t_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
-    layer_add_child(window_layer, text_layer_get_layer(weather_t_layer));
-
-    weather_c_layer = text_layer_create(GRect(108, 148, 40, 19)); // Bottom right of screen
-    text_layer_set_text(weather_c_layer, text_wx_c);
-    text_layer_set_background_color(weather_c_layer, conf.color_surround_background);
-    text_layer_set_text_color(weather_c_layer, conf.color_watchface_outline);
-    text_layer_set_text_alignment(weather_c_layer, GTextAlignmentCenter);
-    text_layer_set_font(weather_c_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
-    layer_add_child(window_layer, text_layer_get_layer(weather_c_layer));
-  }
-
   // Main clock layer
   clock_layer = layer_create(GRect(-1, 12, 144, 142));
   layer_set_update_proc(clock_layer, clock_update_proc);
   layer_add_child(window_layer, clock_layer);
   GRect clock_bounds = layer_get_bounds(clock_layer);
   center = grect_center_point(&clock_bounds);
+
+  // Weather layers
+  if(conf.display_weather) {
+    path_lcloud_ptr = gpath_create(&WX_LCLOUD_PATH_INFO); // Create large cloud symbol
+    gpath_move_to(path_lcloud_ptr, GPoint(4, 5));
+    path_scloud_ptr = gpath_create(&WX_SCLOUD_PATH_INFO); // Create small cloud symbol
+    gpath_move_to(path_scloud_ptr, GPoint(19, 2));
+    path_lightning_ptr = gpath_create(&WX_LIGHTNING_PATH_INFO); // Create lightning symbol
+    gpath_move_to(path_lightning_ptr, GPoint(11, 14));
+    path_snowflake_ptr = gpath_create(&WX_SNOWFLAKE_PATH_INFO); // Create snowflake symbol
+
+    weather_t_layer = text_layer_create(GRect(0, 148, 38, 19)); // Bottom left of screen
+    text_layer_set_text(weather_t_layer, text_wx_t);
+    text_layer_set_background_color(weather_t_layer, conf.color_surround_background);
+    text_layer_set_text_color(weather_t_layer, conf.color_watchface_outline);
+    text_layer_set_text_alignment(weather_t_layer, GTextAlignmentRight);
+    text_layer_set_font(weather_t_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+    layer_add_child(window_layer, text_layer_get_layer(weather_t_layer));
+
+    weather_ft_layer = text_layer_create(GRect(38, 148, 8, 19)); // Bottom left of screen
+    text_layer_set_text(weather_ft_layer, text_wx_ft);
+    text_layer_set_background_color(weather_ft_layer, conf.color_surround_background);
+    text_layer_set_text_color(weather_ft_layer, conf.color_watchface_outline);
+    text_layer_set_text_alignment(weather_ft_layer, GTextAlignmentLeft);
+    text_layer_set_font(weather_ft_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+    layer_add_child(window_layer, text_layer_get_layer(weather_ft_layer));
+
+    weather_c_layer = layer_create(GRect(112, 140, 36, 27)); // Bottom right of screen
+    layer_set_update_proc(weather_c_layer, weather_update_proc);
+    layer_add_child(window_layer, weather_c_layer);
+  }
 
   // Battery status layer
   battery_layer = layer_create(GRect(106, 0, 38, 12)); // Top right-hand of screen, 38x12 size
@@ -171,11 +132,18 @@ void window_unload(Window *window) {
   gpath_destroy(path_bolt_ptr);
   gpath_destroy(path_bt_ptr);
   gpath_destroy(path_plug_ptr);
+  gpath_destroy(path_lcloud_ptr);
+  gpath_destroy(path_scloud_ptr);
+  gpath_destroy(path_lightning_ptr);
+  gpath_destroy(path_snowflake_ptr);
   text_layer_destroy(date_layer);
   text_layer_destroy(day_layer);
   text_layer_destroy(digitime_layer);
   text_layer_destroy(background_layer);
+  text_layer_destroy(weather_t_layer);
+  text_layer_destroy(weather_ft_layer);
   layer_destroy(clock_layer);
   layer_destroy(battery_layer);
   layer_destroy(bt_layer);
+  layer_destroy(weather_c_layer);
 }

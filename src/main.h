@@ -54,6 +54,7 @@ typedef struct {
 extern void clock_update_proc(Layer *layer, GContext *ctx);
 extern void battery_update_proc(Layer *layer, GContext *ctx);
 extern void bt_update_proc(Layer *layer, GContext *ctx);
+extern void weather_update_proc(Layer *layer, GContext *ctx);
 extern void handle_battery(BatteryChargeState charge_state);
 extern appConfig load_defaults();
 extern void handle_battery(BatteryChargeState charge_state);
@@ -71,17 +72,17 @@ extern void hands_update(Animation *anim, AnimationProgress dist_normalized);
 
 // variables
 extern Window *main_window;
-extern Layer *clock_layer, *battery_layer, *bt_layer;
-extern TextLayer *date_layer, *day_layer, *digitime_layer, *background_layer, *weather_t_layer, *weather_c_layer;
+extern Layer *clock_layer, *battery_layer, *bt_layer, *weather_c_layer;
+extern TextLayer *date_layer, *day_layer, *digitime_layer, *background_layer, *weather_t_layer, *weather_ft_layer;
 extern appConfig conf;
 extern int confver;
 extern Time last_time;
 extern Time anim_time;
 extern bool animating;
-extern char text_date[], text_day[], text_time[], text_wx_c[], text_wx_t[];
+extern char text_date[], text_day[], text_time[], text_wx_t[], text_wx_ft[];
 extern int battery_level;
 extern bool battery_charging, bt_connected, power_connected;
-extern GPath *path_bolt_ptr, *path_bt_ptr, *path_plug_ptr;
+extern GPath *path_bolt_ptr, *path_bt_ptr, *path_plug_ptr, *path_lcloud_ptr, *path_scloud_ptr, *path_lightning_ptr, *path_snowflake_ptr;
 extern int radius;
 extern GPoint center;
 extern const uint32_t KEY_CONFVER;
@@ -89,4 +90,5 @@ extern const uint32_t KEY_CONFDAT;
 extern const uint8_t CURRENT_CONFVER;
 extern uint8_t config_changed;
 extern void reload();
+extern Weather wx;
 #endif

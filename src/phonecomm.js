@@ -52,7 +52,7 @@ Pebble.addEventListener('webviewclosed', function(e) {
 
     if (checkforlocalstorage()) {
       // Store in localStorage for retrieval later
-      localStorage.setItem(KEY_CONFVER, "4"); // placeholder, still need to write version upgrade code
+      localStorage.setItem(KEY_CONFVER, "5"); // placeholder, still need to write version upgrade code
       localStorage.setItem(KEY_CONFDAT, JSON.stringify(configuration)); // save configuration
     }
 });
@@ -190,30 +190,30 @@ function fetchWeather(latitude, longitude) {
     if (req.readyState == 4) {
       if(req.status == 200) {
         console.log(req.responseText);
-
         var response = JSON.parse(req.responseText);
-        var temperature = Math.round(response.main.temp * 10);
-        var icon = response.weather[0].icon;
-        var city = response.name;
-        var timestamp = response.dt;
-        /* console.log(temperature);
-        console.log(icon);
-        console.log(city);
-        console.log(timestamp); */
-        var graphic = convertIconToGraphic(icon);
-        // console.log(graphic);
-        var runtime = Date.now() / 100;
-        Pebble.sendAppMessage({ // Send current conditions and temp
-          "WX_C":graphic,
-          "WX_T":temperature,
-          "WX_A":timestamp},
-          function(e) {
-            console.log("Send weather successful @", runtime);
-          }, function(e) {
-            console.log("Send weather failed! @", runtime);
-          }
-        );
-
+        if(response.cod == "200") {
+          var temperature = Math.round(response.main.temp * 10);
+          var icon = response.weather[0].icon;
+          var city = response.name;
+          var timestamp = response.dt;
+          /* console.log(temperature);
+          console.log(icon);
+          console.log(city);
+          console.log(timestamp); */
+          var graphic = convertIconToGraphic(icon);
+          // console.log(graphic);
+          var runtime = Date.now() / 100;
+          Pebble.sendAppMessage({ // Send current conditions and temp
+            "WX_C":graphic,
+            "WX_T":temperature,
+            "WX_A":timestamp},
+            function(e) {
+              console.log("Send weather successful @", runtime);
+            }, function(e) {
+              console.log("Send weather failed! @", runtime);
+            }
+          );
+        }
       } else {
         console.log("HTTP Error " + req.status);
       }
