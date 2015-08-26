@@ -20,6 +20,7 @@ var colretries = 4;
 var optretries = 4;
 var KEY_CONFVER = 52668701; // configuration version ID (no this has nothing to do with the keys in main.h)
 var KEY_CONFDAT = 52668711; // configuration data (using the same key IDs for localStorage just for my own OCD)
+var wxinterval;
 
 Pebble.addEventListener("showConfiguration",
   function(e) {
@@ -194,7 +195,7 @@ function fetchWeather(latitude, longitude) {
         if(response.cod == "200") {
           var temperature = Math.round(response.main.temp * 10);
           var icon = response.weather[0].icon;
-          var city = response.name;
+          // var city = response.name;
           var timestamp = response.dt;
           /* console.log(temperature);
           console.log(icon);
@@ -237,7 +238,7 @@ function locationError(err) {
 }
 
 var startWeatherFetch = function() {
-  var locationOptions = { "timeout": 15000, "maximumAge": 300000 }; 
+  var locationOptions = { "timeout": 15000, "maximumAge": 300000 };
   navigator.geolocation.getCurrentPosition(locationSuccess, locationError, locationOptions);
 };
 
@@ -249,6 +250,6 @@ Pebble.addEventListener("appmessage",
 Pebble.addEventListener("ready", function(e) {
   console.log("phonecomm.js ready!");
 
-  setInterval(startWeatherFetch, 1800000); // 30 minutes
+  wxinterval = setInterval(startWeatherFetch, 1200000); // 20 minutes
   startWeatherFetch();
 });
