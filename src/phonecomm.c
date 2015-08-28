@@ -292,9 +292,9 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
     if(wx.conditions == 0) {
       strncpy(text_wx_t,"???.?",sizeof(text_wx_t));
     } else if(wx.conditions == 201) {
-      strncpy(text_wx_t,"LOC.?",sizeof(text_wx_t));
+      strncpy(text_wx_t,"LOC?",sizeof(text_wx_t));
     } else if(wx.conditions == 202) {
-      strncpy(text_wx_t,"NET.?",sizeof(text_wx_t));
+      strncpy(text_wx_t,"NET?",sizeof(text_wx_t));
     } else {
       ftoa(text_wx_t,wx.temperature,1);
     }
@@ -313,7 +313,14 @@ void inbox_dropped_callback(AppMessageResult reason, void *context) {
 
 void outbox_failed_callback(DictionaryIterator *iter ,AppMessageResult reason, void *context) {
   APP_LOG(APP_LOG_LEVEL_ERROR, "Outbox Message failed! Err: %d", reason);
-} 
+  if(reason == APP_MSG_SEND_TIMEOUT) {
+    nextwx = time(NULL)+20;
+    strncpy(text_wx_t,"PHN?",sizeof(text_wx_t));
+    if(weather_t_layer) {
+      layer_mark_dirty(text_layer_get_layer(weather_t_layer)); // Text layers are supposed to auto-update, but it is slow
+    }
+  }
+}
 
 void convertconfig() {
   int confbytes = 0;

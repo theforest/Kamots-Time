@@ -95,4 +95,5 @@ extern const uint8_t CURRENT_CONFVER;
 extern uint8_t config_changed;
 extern void reload();
 extern Weather wx;
+extern time_t nextwx;
 #endif
