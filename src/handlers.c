@@ -23,7 +23,7 @@ char text_date[] = "28", text_day[] = "Wed", text_time[] = "23z59";
 int battery_level = 100;
 bool battery_charging = false, bt_connected = true, power_connected = false;
 Time last_time;
-  
+
 void handle_battery(BatteryChargeState charge_state) {
   battery_charging = charge_state.is_charging;
   power_connected = charge_state.is_plugged;
@@ -66,7 +66,7 @@ void tick_handler(struct tm *tick_time, TimeUnits changed) {
       struct tm *zulu_time = gmtime(&temptime);
       strftime(text_time, sizeof(text_time), "%Hz%M", zulu_time);
     } else strftime(text_time, sizeof(text_time), "%R", tick_time);
-  }       
+  }
 
   // Redraw
   if(clock_layer) {

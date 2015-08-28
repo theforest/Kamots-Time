@@ -21,6 +21,7 @@ limitations under the License.
 #include "util.h"
 
 #define HAND_MARGIN  14
+time_t nextwx = 0;
 
 void clock_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_fill_color(ctx, conf.color_surround_background);
@@ -118,6 +119,14 @@ void clock_update_proc(Layer *layer, GContext *ctx) {
     if((conf.hour_markers_count == 12) || ((conf.hour_markers_count == 1) && (i == 12)) ||
       ((conf.hour_markers_count == 4) && (i==12 || i==9 || i==6 || i==3))){
       graphics_fill_circle(ctx, hour_marker, 4);    
+    }
+  }
+
+  if(bt_connected && conf.display_weather) { // Start weather update if connected and enabled
+    if(nextwx <= time(NULL)) {
+      bool res = trigger_weather();
+      if(res) nextwx = time(NULL)+1200; // Schedule next try
+      else nextwx = time(NULL)+300;
     }
   }
 }

@@ -214,9 +214,21 @@ function fetchWeather(latitude, longitude) {
               console.log("Send weather failed! @", runtime);
             }
           );
+        } else {
+        console.log("API Error " + response.cod);
+        Pebble.sendAppMessage({
+          "WX_C":"0",
+          "WX_T":"2000",
+          "WX_A":"0"
+        });
         }
       } else {
         console.log("HTTP Error " + req.status);
+        Pebble.sendAppMessage({
+          "WX_C":"202",
+          "WX_T":"2000",
+          "WX_A":"0"
+        });
       }
     }
   };
@@ -225,31 +237,30 @@ function fetchWeather(latitude, longitude) {
 
 function locationSuccess(pos) {
   var coordinates = pos.coords;
+  // console.log(coordinates.latitude + " " + coordinates.longitude);
   fetchWeather(coordinates.latitude, coordinates.longitude);
 }
 
 function locationError(err) {
   console.warn("location error (" + err.code + "): " + err.message);
   Pebble.sendAppMessage({
-    "WX_C":"0",
-    "WX_T":"-2000",
+    "WX_C":"201",
+    "WX_T":"2000",
     "WX_A":"0"
   });
 }
 
 var startWeatherFetch = function() {
-  var locationOptions = { "timeout": 15000, "maximumAge": 300000 };
+  var locationOptions = { "timeout": 20000, "maximumAge": 300000, "enableHighAccuracy": false };
   navigator.geolocation.getCurrentPosition(locationSuccess, locationError, locationOptions);
 };
 
 Pebble.addEventListener("appmessage",
                         function(e) {
-                          console.log("Got message from watch..."); // TODO trigger weather update if requested
+                          console.log("Got message from watch:" + JSON.stringify(e.payload));
+                          startWeatherFetch();
 });
 
 Pebble.addEventListener("ready", function(e) {
   console.log("phonecomm.js ready!");
-
-  wxinterval = setInterval(startWeatherFetch, 1200000); // 20 minutes
-  startWeatherFetch();
 });

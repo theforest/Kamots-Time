@@ -20,6 +20,8 @@ limitations under the License.
 #include <pebble.h>
 #ifndef MAIN_H
 #define MAIN_H
+
+#define OUTBOX_SIZE 32
   
 typedef struct { // MUST change CURRENT_CONFVER in phonecomm.c if this changes
   GColor color_hour_hand;
@@ -47,7 +49,7 @@ typedef struct {
 typedef struct {
   uint8_t conditions;
   float temperature;
-  uint32_t timestamp;
+  time_t timestamp;
 } Weather;
 
 // functions
@@ -66,9 +68,11 @@ extern void window_load(Window *window);
 extern void window_appear(Window *window);
 extern void inbox_dropped_callback(AppMessageResult reason, void *context);
 extern void inbox_received_callback(DictionaryIterator *iterator, void *context);
+extern void outbox_failed_callback(DictionaryIterator *iter ,AppMessageResult reason, void *context);
 extern void animate(int duration, int delay, AnimationImplementation *implementation, bool handlers);
 extern void radius_update(Animation *anim, AnimationProgress dist_normalized);
 extern void hands_update(Animation *anim, AnimationProgress dist_normalized);
+extern bool trigger_weather(void);
 
 // variables
 extern Window *main_window;

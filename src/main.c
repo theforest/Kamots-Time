@@ -127,13 +127,14 @@ static void init() {
   tick_handler(time_now, MINUTE_UNIT);
 
   load(); // load main watchface
-  
+
   // Subscribe to events
   app_message_register_inbox_received(inbox_received_callback);
   app_message_register_inbox_dropped(inbox_dropped_callback);
-  
+  app_message_register_outbox_failed(outbox_failed_callback);
+
   // Open AppMessage
-  app_message_open(APP_MESSAGE_INBOX_SIZE_MINIMUM, 32);
+  app_message_open(APP_MESSAGE_INBOX_SIZE_MINIMUM, OUTBOX_SIZE);
 
   // Prepare animations
   AnimationImplementation radius_impl = {

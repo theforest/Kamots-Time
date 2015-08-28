@@ -77,6 +77,32 @@ appConfig load_defaults() { // fill the default configuration values
   return defaultconf;
 }
 
+bool trigger_weather(void) {
+  AppMessageResult res;
+  DictionaryIterator *iter;
+  DictionaryResult dres;
+  uint8_t wxflag = 1; // Future use, for now 1=GetWX
+  
+  app_message_outbox_begin(&iter);
+  if(iter == NULL) return false;
+  
+  dres = dict_write_uint8(iter, 99, wxflag);
+  dict_write_end(iter);
+
+  if(dres != DICT_OK) {
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Dict error %d", (unsigned int)dres);
+    return false;
+  }
+
+  res = app_message_outbox_send();
+  if(res == APP_MSG_OK) return true;
+  else {
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Outbox error %d", (unsigned int)res);
+    return false;
+  }
+  return false; // Should never get here
+}
+
 void inbox_received_callback(DictionaryIterator *iterator, void *context) {
   APP_LOG(APP_LOG_LEVEL_INFO, "Inbox received %d bytes", (unsigned int)dict_size(iterator));
   int8_t hm_count = 0;
@@ -224,8 +250,10 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
       break;
 
     case WX_T:
-      if(t->value->int16 > -2000) {
+      if(t->value->int16 < 2000) {
         wx.temperature = (float)t->value->int16 / 10.0;
+      } else {
+        wx.temperature = 200.0;
       }
       wxupdate = true;
       break;
@@ -256,21 +284,20 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
     // Look for next item
     t = dict_read_next(iterator);
   }
-
-  if(wxupdate) {
-    if(wx.conditions == 0) {
-      strncpy(text_wx_t,"???.?",sizeof(text_wx_t));
-    } else {
-      ftoa(text_wx_t,wx.temperature,1);
-    }
-  }
-
   if(config_changed > 1) { // configuration changed, we need to reinitialize
     config_changed = 0;
     reload(); // reload everything
   }
-
-  if(conf.display_weather && wxupdate) {
+  if(wxupdate && conf.display_weather) {
+    if(wx.conditions == 0) {
+      strncpy(text_wx_t,"???.?",sizeof(text_wx_t));
+    } else if(wx.conditions == 201) {
+      strncpy(text_wx_t,"LOC.?",sizeof(text_wx_t));
+    } else if(wx.conditions == 202) {
+      strncpy(text_wx_t,"NET.?",sizeof(text_wx_t));
+    } else {
+      ftoa(text_wx_t,wx.temperature,1);
+    }
     if(weather_t_layer) {
       layer_mark_dirty(text_layer_get_layer(weather_t_layer)); // Text layers are supposed to auto-update, but it is slow
     }
@@ -282,6 +309,10 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
 
 void inbox_dropped_callback(AppMessageResult reason, void *context) {
   APP_LOG(APP_LOG_LEVEL_ERROR, "Inbox Message dropped! Err: %d", reason);
+} 
+
+void outbox_failed_callback(DictionaryIterator *iter ,AppMessageResult reason, void *context) {
+  APP_LOG(APP_LOG_LEVEL_ERROR, "Outbox Message failed! Err: %d", reason);
 } 
 
 void convertconfig() {
@@ -310,12 +341,8 @@ void convertconfig() {
         newconf.color_second_hand = defaultconf.color_second_hand;
         newconf.display_second_hand = defaultconf.display_second_hand;
         newconf.digital_as_zulu = defaultconf.digital_as_zulu;
-        // no break here, continue with conversion
-      
-      case 4:
-        newconf.display_weather = defaultconf.display_weather;
         break;
-
+      
       default:
         newconf = defaultconf;
     }
