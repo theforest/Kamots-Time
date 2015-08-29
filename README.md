@@ -1,5 +1,5 @@
 # Kamots-Time
-A watchface for Pebble with fully user-customizable colors right from your phone!
+A watchface for Pebble with fully user-customizable colors right from your phone! Now with weather!
 
 http://apps.getpebble.com/en_US/application/55948917327b5a1a0d0000a0
 
