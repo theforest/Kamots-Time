@@ -78,6 +78,7 @@ appConfig load_defaults() { // fill the default configuration values
 }
 
 bool trigger_weather(void) {
+  if(!bt_connected) return false; // If bluetooth isn't connected, don't bother trying
   AppMessageResult res;
   DictionaryIterator *iter;
   DictionaryResult dres;

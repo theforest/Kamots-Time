@@ -122,11 +122,11 @@ void clock_update_proc(Layer *layer, GContext *ctx) {
     }
   }
 
-  if(bt_connected && conf.display_weather) { // Start weather update if connected and enabled
+  if(conf.display_weather && !animating) { // Start weather update if enabled and watchface draw finished
     if(nextwx <= time(NULL)) {
       bool res = trigger_weather();
-      if(res) nextwx = time(NULL)+1200; // Schedule next try
-      else nextwx = time(NULL)+300;
+      if(res) nextwx = time(NULL)+1200; // Schedule next update
+      else nextwx = time(NULL)+300; // Schedule retry
     }
   }
 }
@@ -198,6 +198,9 @@ void weather_update_proc(Layer *layer, GContext *ctx) {
     case 101:
       graphics_fill_circle(ctx, GPoint(14,12), 10); // large sun/moon
       break;
+    case 2:
+    case 102:
+      graphics_fill_circle(ctx, GPoint(25,5), 4); // small sun/moon
     case 3:
     case 103:
       draw_large_cloud(ctx);
@@ -241,7 +244,7 @@ void weather_update_proc(Layer *layer, GContext *ctx) {
       break;
     case 50:
     case 150:
-      for(int i = 21; i>6; i-=3) {
+      for(int i = 20; i>4; i-=4) {
         graphics_draw_line(ctx,GPoint(6,i+1),GPoint(10,i));
         graphics_draw_line(ctx,GPoint(10,i),GPoint(14,i+1));
         graphics_draw_line(ctx,GPoint(14,i+1),GPoint(18,i));
