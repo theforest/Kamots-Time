@@ -41,6 +41,7 @@ char text_wx_ft[] = "F";
 #define WX_T 14 // Weather Temperature
 #define WX_C 15 // Weather Conditions
 #define WX_A 16 // Weather received At time
+#define TOFF 17 // GMT Offset of local time
 
 // Persistant storage keys
 const uint32_t KEY_CONFVER = 52668701; // int - configuration version ID
@@ -277,6 +278,10 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
       wxupdate = true;
       break;
 
+    case TOFF:
+        wx.gmtoffset = t->value->uint32;
+      break;
+
     default:
       APP_LOG(APP_LOG_LEVEL_ERROR, "Key %d not recognized!", (int)t->key);
       break;
@@ -298,6 +303,7 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
       strncpy(text_wx_t,"NET?",sizeof(text_wx_t));
     } else {
       ftoa(text_wx_t,wx.temperature,1);
+      weather_calc_age();
     }
     if(weather_t_layer) {
       layer_mark_dirty(text_layer_get_layer(weather_t_layer)); // Text layers are supposed to auto-update, but it is slow
@@ -315,7 +321,7 @@ void inbox_dropped_callback(AppMessageResult reason, void *context) {
 void outbox_failed_callback(DictionaryIterator *iter ,AppMessageResult reason, void *context) {
   APP_LOG(APP_LOG_LEVEL_ERROR, "Outbox Message failed! Err: %d", reason);
   if(reason == APP_MSG_SEND_TIMEOUT) {
-    nextwx = time(NULL)+20;
+    if(!app_timer_reschedule(atwx,15000)) atwx = app_timer_register(15000, handle_app_timer_weather, NULL);
     strncpy(text_wx_t,"PHN?",sizeof(text_wx_t));
     if(weather_t_layer) {
       layer_mark_dirty(text_layer_get_layer(weather_t_layer)); // Text layers are supposed to auto-update, but it is slow

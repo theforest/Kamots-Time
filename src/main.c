@@ -21,6 +21,7 @@ limitations under the License.
 
 #define ANIMATION_DURATION 400
 #define ANIMATION_DELAY    500
+AppTimer *atwx = NULL;
 
 static void unload() {
   // Save any configuration changes
@@ -38,6 +39,7 @@ static void unload() {
   bt_layer = NULL;
   weather_t_layer = NULL;
   weather_ft_layer = NULL;
+  weather_a_layer = NULL;
   date_layer = NULL;
   day_layer = NULL;
   digitime_layer = NULL;
@@ -132,6 +134,9 @@ static void init() {
   app_message_register_inbox_received(inbox_received_callback);
   app_message_register_inbox_dropped(inbox_dropped_callback);
   app_message_register_outbox_failed(outbox_failed_callback);
+  
+  // Timers
+  atwx = app_timer_register(2000, handle_app_timer_weather, NULL);
 
   // Open AppMessage
   app_message_open(APP_MESSAGE_INBOX_SIZE_MINIMUM, OUTBOX_SIZE);

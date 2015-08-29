@@ -204,10 +204,12 @@ function fetchWeather(latitude, longitude) {
           var graphic = convertIconToGraphic(icon);
           // console.log(graphic);
           var runtime = Date.now() / 100;
-          Pebble.sendAppMessage({ // Send current conditions and temp
+          var tzoffset = new Date().getTimezoneOffset() * 60;
+          Pebble.sendAppMessage({ // Send current conditions and temp with TZ offset
             "WX_C":graphic,
             "WX_T":temperature,
-            "WX_A":timestamp},
+            "WX_A":timestamp,
+            "TOFF":tzoffset},
             function(e) {
               console.log("Send weather successful @", runtime);
             }, function(e) {

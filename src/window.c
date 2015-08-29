@@ -22,7 +22,7 @@ limitations under the License.
 
 Window *main_window;
 Layer *clock_layer, *battery_layer, *bt_layer, *weather_c_layer;
-TextLayer *date_layer, *day_layer, *digitime_layer, *background_layer, *weather_t_layer, *weather_ft_layer;
+TextLayer *date_layer, *day_layer, *digitime_layer, *background_layer, *weather_t_layer, *weather_ft_layer, *weather_a_layer;
 GPoint center;
 
 void window_appear(Window *window) {
@@ -82,13 +82,21 @@ void window_load(Window *window) {
     text_layer_set_font(weather_t_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
     layer_add_child(window_layer, text_layer_get_layer(weather_t_layer));
 
-    weather_ft_layer = text_layer_create(GRect(38, 148, 8, 19)); // Bottom left of screen
+    weather_ft_layer = text_layer_create(GRect(38, 152, 8, 16)); // Bottom left of screen
     text_layer_set_text(weather_ft_layer, text_wx_ft);
     text_layer_set_background_color(weather_ft_layer, conf.color_surround_background);
     text_layer_set_text_color(weather_ft_layer, conf.color_watchface_outline);
     text_layer_set_text_alignment(weather_ft_layer, GTextAlignmentLeft);
-    text_layer_set_font(weather_ft_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+    text_layer_set_font(weather_ft_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14));
     layer_add_child(window_layer, text_layer_get_layer(weather_ft_layer));
+    
+    weather_a_layer = text_layer_create(GRect(0, 138, 28, 16)); // Bottom left of screen
+    text_layer_set_text(weather_a_layer, text_wx_age);
+    text_layer_set_background_color(weather_a_layer, conf.color_surround_background);
+    text_layer_set_text_color(weather_a_layer, conf.color_watchface_outline);
+    text_layer_set_text_alignment(weather_a_layer, GTextAlignmentLeft);
+    text_layer_set_font(weather_a_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14));
+    layer_add_child(window_layer, text_layer_get_layer(weather_a_layer));
 
     weather_c_layer = layer_create(GRect(112, 140, 36, 27)); // Bottom right of screen
     layer_set_update_proc(weather_c_layer, weather_update_proc);
@@ -142,6 +150,7 @@ void window_unload(Window *window) {
   text_layer_destroy(background_layer);
   text_layer_destroy(weather_t_layer);
   text_layer_destroy(weather_ft_layer);
+  text_layer_destroy(weather_a_layer);
   layer_destroy(clock_layer);
   layer_destroy(battery_layer);
   layer_destroy(bt_layer);

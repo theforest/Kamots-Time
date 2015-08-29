@@ -50,6 +50,7 @@ typedef struct {
   uint8_t conditions;
   float temperature;
   time_t timestamp;
+  uint32_t gmtoffset;
 } Weather;
 
 // functions
@@ -73,17 +74,18 @@ extern void animate(int duration, int delay, AnimationImplementation *implementa
 extern void radius_update(Animation *anim, AnimationProgress dist_normalized);
 extern void hands_update(Animation *anim, AnimationProgress dist_normalized);
 extern bool trigger_weather(void);
+extern void handle_app_timer_weather(void *timer_handle);
 
 // variables
 extern Window *main_window;
 extern Layer *clock_layer, *battery_layer, *bt_layer, *weather_c_layer;
-extern TextLayer *date_layer, *day_layer, *digitime_layer, *background_layer, *weather_t_layer, *weather_ft_layer;
+extern TextLayer *date_layer, *day_layer, *digitime_layer, *background_layer, *weather_t_layer, *weather_ft_layer, *weather_a_layer;
 extern appConfig conf;
 extern int confver;
 extern Time last_time;
 extern Time anim_time;
 extern bool animating;
-extern char text_date[], text_day[], text_time[], text_wx_t[], text_wx_ft[];
+extern char text_date[3], text_day[4], text_time[6], text_wx_t[6], text_wx_ft[2], text_wx_age[5];
 extern int battery_level;
 extern bool battery_charging, bt_connected, power_connected;
 extern GPath *path_bolt_ptr, *path_bt_ptr, *path_plug_ptr, *path_lcloud_ptr, *path_scloud_ptr, *path_lightning_ptr, *path_snowflake_ptr;
@@ -95,5 +97,5 @@ extern const uint8_t CURRENT_CONFVER;
 extern uint8_t config_changed;
 extern void reload();
 extern Weather wx;
-extern time_t nextwx;
+extern AppTimer *atwx;
 #endif

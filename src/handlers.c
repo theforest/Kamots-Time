@@ -18,8 +18,9 @@ limitations under the License.
 */
 
 #include "main.h"
+#include "util.h"
 
-char text_date[] = "28", text_day[] = "Wed", text_time[] = "23z59";
+char text_date[] = "28", text_day[] = "Wed", text_time[] = "23z59", text_wx_age[] = "";
 int battery_level = 100;
 bool battery_charging = false, bt_connected = true, power_connected = false;
 Time last_time;
@@ -72,4 +73,10 @@ void tick_handler(struct tm *tick_time, TimeUnits changed) {
   if(clock_layer) {
     layer_mark_dirty(clock_layer);
   }
+}
+
+void handle_app_timer_weather(void *dat) {
+  bool res = trigger_weather();
+  if(res) atwx = app_timer_register(1200000, handle_app_timer_weather, NULL); // Schedule next update
+  else atwx = app_timer_register(300000, handle_app_timer_weather, NULL); // Schedule retry
 }

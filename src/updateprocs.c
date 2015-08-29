@@ -122,13 +122,7 @@ void clock_update_proc(Layer *layer, GContext *ctx) {
     }
   }
 
-  if(conf.display_weather && !animating) { // Start weather update if enabled and watchface draw finished
-    if(nextwx <= time(NULL)) {
-      bool res = trigger_weather();
-      if(res) nextwx = time(NULL)+1200; // Schedule next update
-      else nextwx = time(NULL)+300; // Schedule retry
-    }
-  }
+  weather_calc_age(); // Update weather age as clock updates
 }
 
 void battery_update_proc(Layer *layer, GContext *ctx) {

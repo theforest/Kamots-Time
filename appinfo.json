@@ -15,7 +15,8 @@
         "HM_C": 8,
         "WX_A": 16,
         "WX_C": 15,
-        "WX_T": 14
+        "WX_T": 14,
+        "TOFF": 17
     },
     "capabilities": [
         "location",
