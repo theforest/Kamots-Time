@@ -186,7 +186,7 @@ function convertIconToGraphic(icon) {
 function fetchWeather(latitude, longitude) {
   var req = new XMLHttpRequest();
   req.open('GET', "http://api.openweathermap.org/data/2.5/weather?" +
-    "lat=" + latitude + "&lon=" + longitude + "&cnt=1&units=imperial", true);
+    "lat=" + latitude + "&lon=" + longitude + "&cnt=1&units=imperial&APPID=8861e7329a75864f502870d5c8714a76", true);
   req.onload = function(e) {
     if (req.readyState == 4) {
       if(req.status == 200) {

@@ -136,7 +136,7 @@ static void init() {
   app_message_register_outbox_failed(outbox_failed_callback);
   
   // Timers
-  atwx = app_timer_register(2000, handle_app_timer_weather, NULL);
+  atwx = app_timer_register(3000, handle_app_timer_weather, NULL);
 
   // Open AppMessage
   app_message_open(APP_MESSAGE_INBOX_SIZE_MINIMUM, OUTBOX_SIZE);
