@@ -182,6 +182,16 @@ void draw_small_cloud(GContext *ctx) {
   gpath_draw_filled(ctx, path_scloud_ptr); // small cloud
 }
 
+void draw_large_sunmoon(GContext *ctx) {
+  graphics_fill_circle(ctx, GPoint(14,12), 10); // large sun/moon
+  // TODO make moon
+}
+
+void draw_small_sunmoon(GContext *ctx) {
+  graphics_fill_circle(ctx, GPoint(25,5), 4); // small sun/moon
+  // TODO make moon
+}
+
 void weather_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_stroke_width(ctx, 1);
   graphics_context_set_stroke_color(ctx, conf.color_watchface_outline);
@@ -190,11 +200,11 @@ void weather_update_proc(Layer *layer, GContext *ctx) {
   switch(wx.conditions) {
     case 1:
     case 101:
-      graphics_fill_circle(ctx, GPoint(14,12), 10); // large sun/moon
+      draw_large_sunmoon(ctx);
       break;
     case 2:
     case 102:
-      graphics_fill_circle(ctx, GPoint(25,5), 4); // small sun/moon
+      draw_small_sunmoon(ctx);
     case 3:
     case 103:
       draw_large_cloud(ctx);
@@ -215,7 +225,7 @@ void weather_update_proc(Layer *layer, GContext *ctx) {
     case 10:
     case 110:
       draw_large_cloud(ctx);
-      graphics_fill_circle(ctx, GPoint(25,5), 4); // small sun/moon
+      draw_small_sunmoon(ctx);
       draw_left_rain(ctx);
       draw_right_rain(ctx);
       break;

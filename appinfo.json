@@ -13,10 +13,10 @@
         "D_SH": 11,
         "D_WX": 13,
         "HM_C": 8,
+        "TOFF": 17,
         "WX_A": 16,
         "WX_C": 15,
-        "WX_T": 14,
-        "TOFF": 17
+        "WX_T": 14
     },
     "capabilities": [
         "location",
@@ -42,7 +42,7 @@
         "basalt"
     ],
     "uuid": "6930038e-f881-44c5-8822-9e32066049df",
-    "versionLabel": "3.5",
+    "versionLabel": "3.6",
     "watchapp": {
         "watchface": true
     }

@@ -75,6 +75,8 @@ const GPathInfo PLUG_PATH_INFO = { // Power plug symbol
   }
 };
 
+// Cloud designs below inspired by watchface "Straight" created by "dPunisher"
+
 const GPathInfo WX_LCLOUD_PATH_INFO = { // Large Cloud
   .num_points = 8,
   .points = (GPoint []) {
