@@ -23,6 +23,7 @@ limitations under the License.
 char text_date[] = "28", text_day[] = "Wed", text_time[] = "23z59", text_wx_age[] = "";
 int battery_level = 100;
 bool battery_charging = false, bt_connected = true, power_connected = false;
+uint8_t lastday = 32;
 Time last_time;
 
 void handle_battery(BatteryChargeState charge_state) {
@@ -56,9 +57,12 @@ void tick_handler(struct tm *tick_time, TimeUnits changed) {
   last_time.minutes = tick_time->tm_min;
   last_time.seconds = tick_time->tm_sec;
 
-  // Change day/date displays
-  strftime(text_date, sizeof(text_date), "%d", tick_time);
-  strftime(text_day, sizeof(text_day), "%a", tick_time);
+  // Change day/date displays (if needed)
+  if(lastday != tick_time->tm_mday) {
+    lastday = tick_time->tm_mday;
+    strftime(text_date, sizeof(text_date), "%d", tick_time);
+    strftime(text_day, sizeof(text_day), "%a", tick_time);
+  }
   
   if(conf.display_digital) {
     // Change digital time display (if enabled)

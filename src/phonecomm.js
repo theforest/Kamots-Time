@@ -59,7 +59,7 @@ Pebble.addEventListener('webviewclosed', function(e) {
 });
 
 function sendconfcolors(conf) {
-    var runtime = Date.now() / 100;
+    var runtime = Date.now() / 1000;
     Pebble.sendAppMessage({ "C_HH": parseInt(conf.color_hh.substring(1,7),16),
                             "C_MH": parseInt(conf.color_mh.substring(1,7),16),
                             "C_SH": parseInt(conf.color_sh.substring(1,7),16),
@@ -77,7 +77,7 @@ function sendconfcolors(conf) {
 }
 
 function sendconfoptions(conf) {
-    var runtime = Date.now() / 100;
+    var runtime = Date.now() / 1000;
     var digitime = 0;
     var bt_stats = 0;
     var sechand = 0;
@@ -203,7 +203,7 @@ function fetchWeather(latitude, longitude) {
           console.log(timestamp); */
           var graphic = convertIconToGraphic(icon);
           // console.log(graphic);
-          var runtime = Date.now() / 100;
+          var runtime = Date.now() / 1000;
           var tzoffset = new Date().getTimezoneOffset() * 60;
           Pebble.sendAppMessage({ // Send current conditions and temp with TZ offset
             "WX_C":graphic,

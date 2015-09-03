@@ -295,7 +295,7 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
     reload(); // reload everything
   }
   if(wxupdate && conf.display_weather) {
-    if(wx.conditions == 0) {
+    if(wx.conditions == 0 || wx.temperature > 199) {
       strncpy(text_wx_t,"???.?",sizeof(text_wx_t));
     } else if(wx.conditions == 201) {
       strncpy(text_wx_t,"LOC?",sizeof(text_wx_t));
@@ -303,14 +303,15 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
       strncpy(text_wx_t,"NET?",sizeof(text_wx_t));
     } else {
       ftoa(text_wx_t,wx.temperature,1);
-      weather_calc_age();
     }
+    weather_calc_age();
     if(weather_t_layer) {
       layer_mark_dirty(text_layer_get_layer(weather_t_layer)); // Text layers are supposed to auto-update, but it is slow
     }
     if(weather_c_layer) {
       layer_mark_dirty(weather_c_layer);
     }
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "WX: t=%s, c=%u, a=%u", text_wx_t, wx.conditions, (unsigned int)wx.timestamp);
   }
 }
 
