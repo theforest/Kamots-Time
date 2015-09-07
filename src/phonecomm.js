@@ -120,7 +120,7 @@ function checkforlocalstorage() {
     }
 }
 
-function convertIconToGraphic(icon) {
+function convertIconToGraphic(icon, wxid) {
   var ret = 0;
   switch(icon) {
     case "01d":
@@ -180,6 +180,17 @@ function convertIconToGraphic(icon) {
     default:
       ret = 0;
   }
+  switch(wxid) {
+    case 501:
+    case 502:
+    case 503:
+    case 504:
+      if(ret == 10 || ret == 110) ret -= 1;
+      break;
+    case 520:
+      if(ret == 9 || ret == 109) ret += 1;
+      break;
+  }
   return ret;
 }
 
@@ -195,13 +206,14 @@ function fetchWeather(latitude, longitude) {
         if(response.cod == "200") {
           var temperature = Math.round(response.main.temp * 10);
           var icon = response.weather[0].icon;
+          var wxid = response.weather[0].id
           // var city = response.name;
           var timestamp = response.dt;
           /* console.log(temperature);
           console.log(icon);
           console.log(city);
           console.log(timestamp); */
-          var graphic = convertIconToGraphic(icon);
+          var graphic = convertIconToGraphic(icon, wxid);
           // console.log(graphic);
           var runtime = Date.now() / 1000;
           var tzoffset = new Date().getTimezoneOffset() * 60;
