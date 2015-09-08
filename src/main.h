@@ -37,6 +37,8 @@ typedef struct { // MUST change CURRENT_CONFVER in phonecomm.c if this changes
   bool display_second_hand; // conf v4
   bool digital_as_zulu; // conf v4
   bool display_weather; // conf v5
+  uint8_t weather_update_frequency; // conf v6
+  bool weather_temp_format; // conf v6
 // } __attribute__((__packed__)) appConfig;  // if needed as config grows
 } appConfig;
 

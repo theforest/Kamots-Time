@@ -27,7 +27,7 @@ static void unload() {
   // Save any configuration changes
   int confbytes = 0;
   confbytes = persist_write_data(KEY_CONFDAT, &conf, sizeof(conf)); // save config
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Unloading! Wrote config ver %i, bytes: %i", confver, confbytes);
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "Wrote config ver %i, bytes: %i", confver, confbytes);
 
   // Unsubscribe from events
   battery_state_service_unsubscribe();
@@ -63,7 +63,10 @@ static void load() {
   if(conf.display_bt_status) bluetooth_connection_service_subscribe(handle_bt);
   if(conf.display_second_hand) tick_timer_service_subscribe(SECOND_UNIT, tick_handler);
   else tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
-}  
+
+  // Timers
+  if(conf.display_weather) atwx = app_timer_register(3000, handle_app_timer_weather, NULL);
+}
 
 void reload() {
   unload();
@@ -128,15 +131,15 @@ static void init() {
 
   tick_handler(time_now, MINUTE_UNIT);
 
+  if(conf.weather_temp_format) strncpy(text_wx_ft, "F", 1);
+  else strncpy(text_wx_ft, "C", 1);
+
   load(); // load main watchface
 
   // Subscribe to events
   app_message_register_inbox_received(inbox_received_callback);
   app_message_register_inbox_dropped(inbox_dropped_callback);
   app_message_register_outbox_failed(outbox_failed_callback);
-  
-  // Timers
-  atwx = app_timer_register(3000, handle_app_timer_weather, NULL);
 
   // Open AppMessage
   app_message_open(APP_MESSAGE_INBOX_SIZE_MINIMUM, OUTBOX_SIZE);

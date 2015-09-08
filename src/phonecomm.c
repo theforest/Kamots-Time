@@ -42,12 +42,14 @@ char text_wx_ft[] = "F";
 #define WX_C 15 // Weather Conditions
 #define WX_A 16 // Weather received At time
 #define TOFF 17 // GMT Offset of local time
+#define WFRQ 18 // Weather Update Frequency
+#define WFMT 19 // Weather Temperature Format
 
 // Persistant storage keys
 const uint32_t KEY_CONFVER = 52668701; // int - configuration version ID
 const uint32_t KEY_CONFDAT = 52668711; // data - configuration data
 
-const uint8_t CURRENT_CONFVER = 5; // MUST CHANGE THIS if appConfig struct changes
+const uint8_t CURRENT_CONFVER = 6; // MUST CHANGE THIS if appConfig struct changes
 
 appConfig load_defaults() { // fill the default configuration values
   appConfig defaultconf;
@@ -75,6 +77,8 @@ appConfig load_defaults() { // fill the default configuration values
   defaultconf.display_second_hand = false;
   defaultconf.digital_as_zulu = false;
   defaultconf.display_weather = false;
+  defaultconf.weather_update_frequency = 20; // minutes
+  defaultconf.weather_temp_format = true; // true=F, false=C
   return defaultconf;
 }
 
@@ -83,8 +87,10 @@ bool trigger_weather(void) {
   AppMessageResult res;
   DictionaryIterator *iter;
   DictionaryResult dres;
-  uint8_t wxflag = 1; // Future use, for now 1=GetWX
-  
+  uint8_t wxflag = 1; // 1=GetWX (C), 2=GetWX (F)
+
+  wxflag = wxflag + (unsigned int)conf.weather_temp_format; // Pass along temperature format
+
   app_message_outbox_begin(&iter);
   if(iter == NULL) return false;
   
@@ -108,6 +114,7 @@ bool trigger_weather(void) {
 void inbox_received_callback(DictionaryIterator *iterator, void *context) {
   APP_LOG(APP_LOG_LEVEL_INFO, "Inbox received %d bytes", (unsigned int)dict_size(iterator));
   int8_t hm_count = 0;
+  int8_t wx_freq = 20;
   int32_t colorint = 0;
   bool wxupdate = false;
 
@@ -270,16 +277,35 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
       break;
 
     case WX_A:
-      if(t->value->uint32 > 100000) {
+      if(t->value->uint32 > 10000000) {
         wx.timestamp = t->value->uint32;
       } else {
-        wx.timestamp = 0;
+        wx.timestamp = 1;
       }
       wxupdate = true;
       break;
 
     case TOFF:
         wx.gmtoffset = t->value->uint32;
+      break;
+
+    case WFRQ:
+      wx_freq = t->value->int8;
+      if(wx_freq == 20) conf.weather_update_frequency = 20;
+      if(wx_freq == 30) conf.weather_update_frequency = 30;
+      if(wx_freq == 40) conf.weather_update_frequency = 40;
+      if(wx_freq == 50) conf.weather_update_frequency = 50;
+      if(wx_freq == 60) conf.weather_update_frequency = 60;
+      config_changed++;
+      break;
+
+    case WFMT:
+      if (t->value->int8 == 1) {
+        conf.weather_temp_format = true;
+      } else {
+        conf.weather_temp_format = false;
+      }
+      config_changed++;
       break;
 
     default:
@@ -292,11 +318,14 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
   }
   if(config_changed > 1) { // configuration changed, we need to reinitialize
     config_changed = 0;
+    if(conf.weather_temp_format) strncpy(text_wx_ft, "F", 1);
+    else strncpy(text_wx_ft, "C", 1);
     reload(); // reload everything
   }
   if(wxupdate && conf.display_weather) {
     if(wx.conditions == 0 || wx.temperature > 199) {
       strncpy(text_wx_t,"???.?",sizeof(text_wx_t));
+      wx.conditions = 0;
     } else if(wx.conditions == 201) {
       strncpy(text_wx_t,"LOC?",sizeof(text_wx_t));
     } else if(wx.conditions == 202) {
@@ -322,7 +351,7 @@ void inbox_dropped_callback(AppMessageResult reason, void *context) {
 void outbox_failed_callback(DictionaryIterator *iter ,AppMessageResult reason, void *context) {
   APP_LOG(APP_LOG_LEVEL_ERROR, "Outbox Message failed! Err: %d", reason);
   if(reason == APP_MSG_SEND_TIMEOUT) {
-    if(!app_timer_reschedule(atwx,15000)) atwx = app_timer_register(15000, handle_app_timer_weather, NULL);
+    if(!app_timer_reschedule(atwx,30000)) atwx = app_timer_register(30000, handle_app_timer_weather, NULL);
     strncpy(text_wx_t,"PHN?",sizeof(text_wx_t));
     if(weather_t_layer) {
       layer_mark_dirty(text_layer_get_layer(weather_t_layer)); // Text layers are supposed to auto-update, but it is slow
@@ -356,8 +385,15 @@ void convertconfig() {
         newconf.color_second_hand = defaultconf.color_second_hand;
         newconf.display_second_hand = defaultconf.display_second_hand;
         newconf.digital_as_zulu = defaultconf.digital_as_zulu;
+
+      case 4:
+        newconf.display_weather = defaultconf.display_weather;
+
+      case 5:
+        newconf.weather_update_frequency = defaultconf.weather_update_frequency;
+        newconf.weather_temp_format = defaultconf.weather_temp_format;
         break;
-      
+
       default:
         newconf = defaultconf;
     }

@@ -81,6 +81,6 @@ void tick_handler(struct tm *tick_time, TimeUnits changed) {
 
 void handle_app_timer_weather(void *dat) {
   bool res = trigger_weather();
-  if(res) atwx = app_timer_register(1200000, handle_app_timer_weather, NULL); // Schedule next update
+  if(res) atwx = app_timer_register(conf.weather_update_frequency * 60000, handle_app_timer_weather, NULL); // Schedule next update
   else atwx = app_timer_register(300000, handle_app_timer_weather, NULL); // Schedule retry
 }

@@ -20,7 +20,7 @@ var colretries = 4;
 var optretries = 4;
 var KEY_CONFVER = 52668701; // configuration version ID (no this has nothing to do with the keys in main.h)
 var KEY_CONFDAT = 52668711; // configuration data (using the same key IDs for localStorage just for my own OCD)
-var wxinterval;
+var wxreq = 2;
 
 Pebble.addEventListener("showConfiguration",
   function(e) {
@@ -83,23 +83,28 @@ function sendconfoptions(conf) {
     var sechand = 0;
     var dtzulu = 0;
     var weather = 0;
+    var wxformat = 1;
     var digitime_string = conf.digitime;
     var bt_stats_string = conf.bt_stats;
     var sechand_string = conf.sechand;
     var dtzulu_string = conf.dtzulu;
     var weather_string = conf.wx;
+    var wxformat_string = conf.wx_format;
     if(digitime_string.match(/^on/)) digitime = 1;
     if(bt_stats_string.match(/^on/)) bt_stats = 1;
     if(sechand_string.match(/^on/)) sechand = 1;
     if(dtzulu_string.match(/^on/)) dtzulu = 1;
     if(weather_string.match(/^on/)) weather = 1;
+    if(wxformat_string.match(/^off/)) wxformat = 0;
 
     Pebble.sendAppMessage({ "HM_C": parseInt(conf.hm_count,10),
                             "D_DT": digitime,
                             "D_BT": bt_stats,
                             "D_SH": sechand,
                             "DT_Z": dtzulu,
-                            "D_WX": weather },
+                            "D_WX": weather,
+                            "WFRQ": parseInt(conf.wx_freq,10),
+                            "WFMT": wxformat },
                             function(e) {
                               console.log("Send options successful @", runtime);
                             }, function(e) {
@@ -120,7 +125,7 @@ function checkforlocalstorage() {
     }
 }
 
-function convertIconToGraphic(icon, wxid) {
+function convertIconToGraphic(icon, wxid, clouds) {
   var ret = 0;
   switch(icon) {
     case "01d":
@@ -185,7 +190,7 @@ function convertIconToGraphic(icon, wxid) {
     case 502:
     case 503:
     case 504:
-      if(ret == 10 || ret == 110) ret -= 1;
+      if((ret == 10 || ret == 110) && clouds >= 70) ret -= 1;
       break;
     case 520:
       if(ret == 9 || ret == 109) ret += 1;
@@ -195,9 +200,13 @@ function convertIconToGraphic(icon, wxid) {
 }
 
 function fetchWeather(latitude, longitude) {
+  var owm_appid = "8861e7329a75864f502870d5c8714a76"; // This is registered to Kamots Time. Please generate and use your own.
+  console.log("Fetching weather for: " + latitude + " " + longitude + " format: " + wxreq);
   var req = new XMLHttpRequest();
-  req.open('GET', "http://api.openweathermap.org/data/2.5/weather?" +
-    "lat=" + latitude + "&lon=" + longitude + "&cnt=1&units=imperial&APPID=8861e7329a75864f502870d5c8714a76", true);
+  var url = "http://api.openweathermap.org/data/2.5/weather?lat=" + latitude + "&lon=" + longitude + "&cnt=1";
+  if(wxreq == 1) url = url + "&units=metric&APPID=" + owm_appid;
+  else url = url + "&units=imperial&APPID=" + owm_appid;
+  req.open('GET', url, true);
   req.onload = function(e) {
     if (req.readyState == 4) {
       if(req.status == 200) {
@@ -206,14 +215,15 @@ function fetchWeather(latitude, longitude) {
         if(response.cod == "200") {
           var temperature = Math.round(response.main.temp * 10);
           var icon = response.weather[0].icon;
-          var wxid = response.weather[0].id
+          var wxid = response.weather[0].id;
+          var clouds = response.clouds.all;
           // var city = response.name;
           var timestamp = response.dt;
           /* console.log(temperature);
           console.log(icon);
           console.log(city);
           console.log(timestamp); */
-          var graphic = convertIconToGraphic(icon, wxid);
+          var graphic = convertIconToGraphic(icon, wxid, clouds);
           // console.log(graphic);
           var runtime = Date.now() / 1000;
           var tzoffset = new Date().getTimezoneOffset() * 60;
@@ -233,7 +243,8 @@ function fetchWeather(latitude, longitude) {
         Pebble.sendAppMessage({
           "WX_C":"0",
           "WX_T":"2000",
-          "WX_A":"0"
+          "WX_A":"0",
+          "TOFF":"0"
         });
         }
       } else {
@@ -241,7 +252,8 @@ function fetchWeather(latitude, longitude) {
         Pebble.sendAppMessage({
           "WX_C":"202",
           "WX_T":"2000",
-          "WX_A":"0"
+          "WX_A":"0",
+          "TOFF":"0"
         });
       }
     }
@@ -256,11 +268,12 @@ function locationSuccess(pos) {
 }
 
 function locationError(err) {
-  console.warn("location error (" + err.code + "): " + err.message);
+  console.warn("location error!");
   Pebble.sendAppMessage({
     "WX_C":"201",
     "WX_T":"2000",
-    "WX_A":"0"
+    "WX_A":"0",
+    "TOFF":"0"
   });
 }
 
@@ -272,6 +285,7 @@ var startWeatherFetch = function() {
 Pebble.addEventListener("appmessage",
                         function(e) {
                           console.log("Got message from watch:" + JSON.stringify(e.payload));
+                          wxreq = e.payload.wxreq;
                           startWeatherFetch();
 });
 

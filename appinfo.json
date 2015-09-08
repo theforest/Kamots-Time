@@ -16,7 +16,10 @@
         "TOFF": 17,
         "WX_A": 16,
         "WX_C": 15,
-        "WX_T": 14
+        "WX_T": 14,
+        "WFRQ": 18,
+        "WFMT": 19,
+        "wxreq": 99
     },
     "capabilities": [
         "location",
