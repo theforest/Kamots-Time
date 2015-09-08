@@ -30,6 +30,7 @@ static void unload() {
   APP_LOG(APP_LOG_LEVEL_DEBUG, "Wrote config ver %i, bytes: %i", confver, confbytes);
 
   // Unsubscribe from events
+  app_timer_cancel(atwx);
   battery_state_service_unsubscribe();
   bluetooth_connection_service_unsubscribe();
   window_stack_remove(main_window, true);
