@@ -53,25 +53,14 @@ const uint8_t CURRENT_CONFVER = 6; // MUST CHANGE THIS if appConfig struct chang
 
 appConfig load_defaults() { // fill the default configuration values
   appConfig defaultconf;
-  #ifndef PBL_COLOR
-  defaultconf.color_hour_hand = GColorBlack; // Default colors, well, black and white
-  defaultconf.color_minute_hand = GColorBlack;
-  defaultconf.color_hour_markers = GColorBlack;
+  defaultconf.color_hour_hand = COLOR_FALLBACK(GColorRed,GColorBlack);
+  defaultconf.color_minute_hand = COLOR_FALLBACK(GColorBlue,GColorBlack);
+  defaultconf.color_hour_markers = COLOR_FALLBACK(GColorDarkGreen,GColorBlack);
   defaultconf.color_watchface_background = GColorWhite;
   defaultconf.color_watchface_outline = GColorBlack;
-  defaultconf.color_surround_background = GColorClear;
-  defaultconf.display_digital = true; // Default DO displaying digital time
-  defaultconf.color_second_hand = GColorBlack;
-  #else
-  defaultconf.color_hour_hand = GColorRed; // Default colors
-  defaultconf.color_minute_hand = GColorBlue;
-  defaultconf.color_hour_markers = GColorDarkGreen;
-  defaultconf.color_watchface_background = GColorWhite;
-  defaultconf.color_watchface_outline = GColorBlack;
-  defaultconf.color_surround_background = GColorDarkGreen;
+  defaultconf.color_surround_background = COLOR_FALLBACK(GColorDarkGreen,GColorClear);
   defaultconf.display_digital = false; // Default not displaying digital time
   defaultconf.color_second_hand = GColorBlack;
-  #endif
   defaultconf.hour_markers_count = 12; // Show all hour markers by default
   defaultconf.display_bt_status = false; // Default not displaying bluetooth status
   defaultconf.display_second_hand = false;
@@ -134,7 +123,7 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
       }
       config_changed++;
       break;
-#ifdef PBL_COLOR
+#ifndef PBL_PLATFORM_APLITE
     case C_HH:
       colorint = t->value->int32;
       if(colorint >= 0x0 && colorint <= 0xFFFFFF) conf.color_hour_hand = GColorFromHEX(colorint);
@@ -221,7 +210,7 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
       if(hm_count == 1) conf.hour_markers_count = 1;
       config_changed++;
       break;
-      
+
     case D_BT:
       if (t->value->int8 == 1) {
         conf.display_bt_status = true;

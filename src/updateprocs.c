@@ -27,10 +27,10 @@ void clock_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_fill_color(ctx, conf.color_surround_background);
   graphics_fill_rect(ctx, layer_get_bounds(layer), 0, GCornerNone);
 
-#ifdef PBL_COLOR
+//#ifndef PBL_PLATFORM_APLITE
   // For smooth lines
   graphics_context_set_antialiased(ctx, true);
-#endif
+//#endif
   
   // clockface
   graphics_context_set_fill_color(ctx, conf.color_watchface_background);
@@ -38,13 +38,8 @@ void clock_update_proc(Layer *layer, GContext *ctx) {
 
   // Draw outline
   graphics_context_set_stroke_color(ctx, conf.color_watchface_outline);
-#ifdef PBL_COLOR
   graphics_context_set_stroke_width(ctx, 2);
-#endif
   graphics_draw_circle(ctx, center, radius);
-#ifndef PBL_COLOR
-  graphics_draw_circle(ctx, center, radius-1); // draw an extra circle on B&W Pebble.
-#endif
 
   // Don't use current time while animating
   Time mode_time = (animating) ? anim_time : last_time;
@@ -84,20 +79,11 @@ void clock_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_stroke_width(ctx, 4);
   graphics_context_set_stroke_color(ctx, conf.color_minute_hand);
   if(radius > HAND_MARGIN) {
-    #ifdef PBL_COLOR
     graphics_draw_line(ctx, center, minute_hand);
-    #else
-    graphics_draw_line2(ctx, center, minute_hand);
-    #endif
   }
   graphics_context_set_stroke_color(ctx, conf.color_hour_hand);
   if(radius > 2 * HAND_MARGIN) {
-    #ifdef PBL_COLOR
     graphics_draw_line(ctx, center, hour_hand);
-    #else
-    graphics_context_set_stroke_width(ctx, 6);
-    graphics_draw_line2(ctx, center, hour_hand);
-    #endif
   }
   if(conf.display_second_hand) {
     graphics_context_set_stroke_width(ctx, 1);
