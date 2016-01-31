@@ -49,7 +49,7 @@ char text_wx_ft[] = "F";
 const uint32_t KEY_CONFVER = 52668701; // int - configuration version ID
 const uint32_t KEY_CONFDAT = 52668711; // data - configuration data
 
-const uint8_t CURRENT_CONFVER = 6; // MUST CHANGE THIS if appConfig struct changes
+const uint8_t CURRENT_CONFVER = 7; // MUST CHANGE THIS if appConfig struct changes
 
 appConfig load_defaults() { // fill the default configuration values
   appConfig defaultconf;
@@ -123,7 +123,7 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
       }
       config_changed++;
       break;
-#ifndef PBL_PLATFORM_APLITE
+#if defined(PBL_PLATFORM_APLITE)
     case C_HH:
       colorint = t->value->int32;
       if(colorint >= 0x0 && colorint <= 0xFFFFFF) conf.color_hour_hand = GColorFromHEX(colorint);
@@ -363,12 +363,11 @@ void convertconfig() {
       case 1:
         newconf.color_watchface_background = conf.color_watchface_outline;
         newconf.color_watchface_outline = conf.color_watchface_background;
-        // no break here, continue with conversion
+        // no break until last case, continue with conversion
 
       case 2:
         newconf.hour_markers_count = defaultconf.hour_markers_count;
         newconf.display_bt_status = defaultconf.display_bt_status;
-        // no break here, continue with conversion
 
       case 3:
         newconf.color_second_hand = defaultconf.color_second_hand;
@@ -381,6 +380,20 @@ void convertconfig() {
       case 5:
         newconf.weather_update_frequency = defaultconf.weather_update_frequency;
         newconf.weather_temp_format = defaultconf.weather_temp_format;
+
+      case 6:
+        if(((int)conf.color_hour_hand.argb == 0) && !gcolor_equal(conf.color_hour_hand,GColorBlack)) newconf.color_hour_hand = GColorBlack;
+        if(((int)conf.color_hour_hand.argb == 1) && !gcolor_equal(conf.color_hour_hand,GColorWhite)) newconf.color_hour_hand = GColorWhite;
+        if(((int)conf.color_minute_hand.argb == 0) && !gcolor_equal(conf.color_minute_hand,GColorBlack)) newconf.color_minute_hand = GColorBlack;
+        if(((int)conf.color_minute_hand.argb == 1) && !gcolor_equal(conf.color_minute_hand,GColorWhite)) newconf.color_minute_hand = GColorWhite;
+        if(((int)conf.color_hour_markers.argb == 0) && !gcolor_equal(conf.color_hour_markers,GColorBlack)) newconf.color_hour_markers = GColorBlack;
+        if(((int)conf.color_hour_markers.argb == 1) && !gcolor_equal(conf.color_hour_markers,GColorWhite)) newconf.color_hour_markers = GColorWhite;
+        if(((int)conf.color_watchface_background.argb == 0) && !gcolor_equal(conf.color_watchface_background,GColorBlack)) newconf.color_watchface_background = GColorBlack;
+        if(((int)conf.color_watchface_background.argb == 1) && !gcolor_equal(conf.color_watchface_background,GColorWhite)) newconf.color_watchface_background = GColorWhite;
+        if(((int)conf.color_watchface_outline.argb == 0) && !gcolor_equal(conf.color_watchface_outline,GColorBlack)) newconf.color_watchface_outline = GColorBlack;
+        if(((int)conf.color_watchface_outline.argb == 1) && !gcolor_equal(conf.color_watchface_outline,GColorWhite)) newconf.color_watchface_outline = GColorWhite;
+        if(((int)conf.color_surround_background.argb == 0) && !gcolor_equal(conf.color_surround_background,GColorBlack)) newconf.color_surround_background = GColorBlack;
+        if(((int)conf.color_surround_background.argb == 1) && !gcolor_equal(conf.color_surround_background,GColorWhite)) newconf.color_surround_background = GColorWhite;
         break;
 
       default:

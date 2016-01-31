@@ -19,11 +19,7 @@ void weather_calc_age() {
     text_wx_age[0] = 0;
   }
   if(lastwxage <= (time(NULL)-30)) {
-    #ifdef PBL_PLATFORM_APLITE
-    age = (time(NULL) - (wx.timestamp-wx.gmtoffset)) / 60;
-    #else
     age = (time(NULL) - wx.timestamp) / 60;
-    #endif
     if(age < 100) snprintf(text_wx_age, sizeof(text_wx_age), "%um", age);
     else strncpy(text_wx_age, "99m+", sizeof(text_wx_age));
     lastwxage = time(NULL);

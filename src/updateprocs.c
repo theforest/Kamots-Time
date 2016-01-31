@@ -27,10 +27,8 @@ void clock_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_fill_color(ctx, conf.color_surround_background);
   graphics_fill_rect(ctx, layer_get_bounds(layer), 0, GCornerNone);
 
-//#ifndef PBL_PLATFORM_APLITE
   // For smooth lines
   graphics_context_set_antialiased(ctx, true);
-//#endif
   
   // clockface
   graphics_context_set_fill_color(ctx, conf.color_watchface_background);
