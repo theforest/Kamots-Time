@@ -123,7 +123,7 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
       }
       config_changed++;
       break;
-#if defined(PBL_PLATFORM_APLITE)
+#if defined(PBL_COLOR)
     case C_HH:
       colorint = t->value->int32;
       if(colorint >= 0x0 && colorint <= 0xFFFFFF) conf.color_hour_hand = GColorFromHEX(colorint);
