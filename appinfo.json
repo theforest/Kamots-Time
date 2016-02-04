@@ -1,55 +1,55 @@
 {
-    "appKeys": {
-        "C_HH": 1,
-        "C_HM": 3,
-        "C_MH": 2,
-        "C_SB": 6,
-        "C_SH": 10,
-        "C_WB": 4,
-        "C_WO": 5,
-        "DT_Z": 12,
-        "D_BT": 9,
-        "D_DT": 7,
-        "D_SH": 11,
-        "D_WX": 13,
-        "HM_C": 8,
-        "TOFF": 17,
-        "WFMT": 19,
-        "WFRQ": 18,
-        "WX_A": 16,
-        "WX_C": 15,
-        "WX_T": 14,
-        "wxreq": 99
-    },
-    "capabilities": [
-        "location",
-        "configurable"
-    ],
-    "companyName": "kamotswind",
-    "enableMultiJS": true,
-    "longName": "Kamots Time",
-    "projectType": "native",
-    "resources": {
-        "media": [
-            {
-                "file": "images/KamotsTimeICON.png",
-                "menuIcon": true,
-                "name": "ICON",
-                "targetPlatforms": null,
-                "type": "png"
-            }
-        ]
-    },
-    "sdkVersion": "3",
-    "shortName": "Kamots Time",
-    "targetPlatforms": [
-        "aplite",
-        "basalt",
-        "chalk"
-    ],
-    "uuid": "6930038e-f881-44c5-8822-9e32066049df",
-    "versionLabel": "4.0",
-    "watchapp": {
-        "watchface": true
-    }
+  "appKeys": {
+    "C_HH": 1,
+    "C_HM": 3,
+    "C_MH": 2,
+    "C_SB": 6,
+    "C_SH": 10,
+    "C_WB": 4,
+    "C_WO": 5,
+    "DT_Z": 12,
+    "D_BT": 9,
+    "D_DT": 7,
+    "D_SH": 11,
+    "D_WX": 13,
+    "HM_C": 8,
+    "TOFF": 17,
+    "WFMT": 19,
+    "WFRQ": 18,
+    "WX_A": 16,
+    "WX_C": 15,
+    "WX_T": 14,
+    "wxreq": 99
+  },
+  "capabilities": [
+    "location",
+    "configurable"
+  ],
+  "companyName": "kamotswind",
+  "enableMultiJS": true,
+  "longName": "Kamots Time",
+  "projectType": "native",
+  "resources": {
+    "media": [
+      {
+        "file": "images/KamotsTimeICON.png",
+        "menuIcon": true,
+        "name": "ICON",
+        "targetPlatforms": null,
+        "type": "png"
+      }
+    ]
+  },
+  "sdkVersion": "3",
+  "shortName": "Kamots Time",
+  "targetPlatforms": [
+    "aplite",
+    "basalt",
+    "chalk"
+  ],
+  "uuid": "6930038e-f881-44c5-8822-9e32066049df",
+  "versionLabel": "4.0",
+  "watchapp": {
+    "watchface": true
+  }
 }
