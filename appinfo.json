@@ -14,11 +14,11 @@
         "D_WX": 13,
         "HM_C": 8,
         "TOFF": 17,
+        "WFMT": 19,
+        "WFRQ": 18,
         "WX_A": 16,
         "WX_C": 15,
         "WX_T": 14,
-        "WFRQ": 18,
-        "WFMT": 19,
         "wxreq": 99
     },
     "capabilities": [
@@ -26,6 +26,7 @@
         "configurable"
     ],
     "companyName": "kamotswind",
+    "enableMultiJS": true,
     "longName": "Kamots Time",
     "projectType": "native",
     "resources": {
@@ -34,6 +35,7 @@
                 "file": "images/KamotsTimeICON.png",
                 "menuIcon": true,
                 "name": "ICON",
+                "targetPlatforms": null,
                 "type": "png"
             }
         ]
@@ -42,10 +44,11 @@
     "shortName": "Kamots Time",
     "targetPlatforms": [
         "aplite",
-        "basalt"
+        "basalt",
+        "chalk"
     ],
     "uuid": "6930038e-f881-44c5-8822-9e32066049df",
-    "versionLabel": "3.9",
+    "versionLabel": "4.0",
     "watchapp": {
         "watchface": true
     }
