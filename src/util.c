@@ -17,7 +17,16 @@ void weather_calc_age() {
   if(wx.conditions == 0) {
     lastwxage = time(NULL)-29;
     text_wx_age[0] = 0;
+  } else if(wx.conditions == 201) {
+    strncpy(text_wx_age,"GPS?",sizeof(text_wx_age));
+  } else if(wx.conditions == 202) {
+    strncpy(text_wx_age,"NET?",sizeof(text_wx_age));
+  } else if(wx.conditions == 203) {
+    strncpy(text_wx_age,"API?",sizeof(text_wx_age));
+  } else {
+    strncpy(text_wx_age,"ERR!",sizeof(text_wx_age));
   }
+
   if(lastwxage <= (time(NULL)-30)) {
     age = (time(NULL) - wx.timestamp) / 60;
     if(age < 100) snprintf(text_wx_age, sizeof(text_wx_age), "%um", age);

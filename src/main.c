@@ -21,7 +21,7 @@ limitations under the License.
 
 #define ANIMATION_DURATION 400
 #define ANIMATION_DELAY    500
-AppTimer *atwx = NULL;
+AppTimer *atwx;
 
 static void unload() {
   // Save any configuration changes
@@ -46,6 +46,7 @@ static void unload() {
   digitime_layer = NULL;
   weather_c_layer = NULL;
   background_layer = NULL;
+  atwx = NULL;
 }
 
 static void load() {
@@ -66,7 +67,8 @@ static void load() {
   else tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
 
   // Timers
-  if(conf.display_weather) atwx = app_timer_register(4000, handle_app_timer_weather, NULL);
+  atwx = NULL;
+  if(conf.display_weather) atwx = app_timer_register(3000, handle_app_timer_weather, NULL);
 }
 
 void reload() {

@@ -313,18 +313,12 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
   }
   if(wxupdate && conf.display_weather) {
     APP_LOG(APP_LOG_LEVEL_DEBUG, "WX: t=%d, c=%u, a=%u", (int)wx.temperature, wx.conditions, (unsigned int)wx.timestamp);
-    if(wx.conditions == 201) {
-      strncpy(text_wx_t,"GPS?",sizeof(text_wx_t));
-    } else if(wx.conditions == 202) {
-      strncpy(text_wx_t,"NET?",sizeof(text_wx_t));
-    } else if(wx.conditions == 203) {
-      strncpy(text_wx_t,"API?",sizeof(text_wx_t));
-    } else if(wx.conditions == 0 || wx.temperature > 199) {
-      strncpy(text_wx_t,"?!",sizeof(text_wx_t));
+    if(wx.conditions > 200 || wx.conditions == 0) {
+      strncpy(text_wx_t,"---.-",sizeof(text_wx_t));
     } else {
       ftoa(text_wx_t,wx.temperature,1);
+      weather_calc_age();
     }
-    weather_calc_age();
     if(weather_t_layer) {
       layer_mark_dirty(text_layer_get_layer(weather_t_layer)); // Text layers are supposed to auto-update, but it is slow
     }
