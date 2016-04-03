@@ -207,10 +207,28 @@ function fetchWeather(latitude, longitude) {
   if(wxreq == 1) url = url + "&units=metric&APPID=" + owm_appid;
   else url = url + "&units=imperial&APPID=" + owm_appid;
   req.open('GET', url, true);
+  req.onerror = function(e) {
+    console.log("Request Error " + req.status + " " + e.target.response.reason);
+    Pebble.sendAppMessage({
+      "WX_C":202,
+      "WX_T":2000,
+      "WX_A":0,
+      "TOFF":0
+    });
+  } 
+  req.ontimeout = function(e) {
+    console.log("Request Timeout " + req.status);
+    Pebble.sendAppMessage({
+      "WX_C":202,
+      "WX_T":2000,
+      "WX_A":0,
+      "TOFF":0
+    });
+  }
   req.onload = function(e) {
     if (req.readyState == 4) {
       if(req.status == 200) {
-        console.log(req.responseText);
+        //console.log(req.responseText); // Only for debugging
         var response = JSON.parse(req.responseText);
         if(response.cod == "200") {
           var temperature = Math.round(response.main.temp * 10);
@@ -226,7 +244,7 @@ function fetchWeather(latitude, longitude) {
           var graphic = convertIconToGraphic(icon, wxid, clouds);
           // console.log(graphic);
           var runtime = Date.now() / 1000;
-          var tzoffset = new Date().getTimezoneOffset() * 60;
+          var tzoffset = (new Date().getTimezoneOffset()) * 60;
           Pebble.sendAppMessage({ // Send current conditions and temp with TZ offset
             "WX_C":graphic,
             "WX_T":temperature,
@@ -241,21 +259,29 @@ function fetchWeather(latitude, longitude) {
         } else {
         console.log("API Error " + response.cod);
         Pebble.sendAppMessage({
-          "WX_C":"0",
-          "WX_T":"2000",
-          "WX_A":"0",
-          "TOFF":"0"
+          "WX_C":203,
+          "WX_T":2000,
+          "WX_A":0,
+          "TOFF":0
         });
         }
       } else {
         console.log("HTTP Error " + req.status);
         Pebble.sendAppMessage({
-          "WX_C":"202",
-          "WX_T":"2000",
-          "WX_A":"0",
-          "TOFF":"0"
+          "WX_C":202,
+          "WX_T":2000,
+          "WX_A":0,
+          "TOFF":0
         });
       }
+    } else {
+      console.log("Request Error " + req.status + " readyState=" + req.readyState);
+      Pebble.sendAppMessage({
+        "WX_C":202,
+        "WX_T":2000,
+        "WX_A":0,
+        "TOFF":0
+      });
     }
   };
   req.send(null);
@@ -270,10 +296,10 @@ function locationSuccess(pos) {
 function locationError(err) {
   console.warn("location error!");
   Pebble.sendAppMessage({
-    "WX_C":"201",
-    "WX_T":"2000",
-    "WX_A":"0",
-    "TOFF":"0"
+    "WX_C":201,
+    "WX_T":2000,
+    "WX_A":0,
+    "TOFF":0
   });
 }
 

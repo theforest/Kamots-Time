@@ -66,7 +66,7 @@ static void load() {
   else tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
 
   // Timers
-  if(conf.display_weather) atwx = app_timer_register(3000, handle_app_timer_weather, NULL);
+  if(conf.display_weather) atwx = app_timer_register(4000, handle_app_timer_weather, NULL);
 }
 
 void reload() {

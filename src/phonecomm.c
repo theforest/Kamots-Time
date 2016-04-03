@@ -21,7 +21,7 @@ int confver = 0;
 appConfig conf;
 uint8_t config_changed = 0;
 Weather wx;
-char text_wx_t[] = "???.?";
+char text_wx_t[] = "---.-";
 char text_wx_ft[] = "F";
 
 // Phone communication keys
@@ -251,7 +251,7 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
       if(t->value->int16 < 2000) {
         wx.temperature = (float)t->value->int16 / 10.0;
       } else {
-        wx.temperature = 200.0;
+        wx.temperature = 222.0;
       }
       wxupdate = true;
       break;
@@ -312,13 +312,15 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
     reload(); // reload everything
   }
   if(wxupdate && conf.display_weather) {
-    if(wx.conditions == 0 || wx.temperature > 199) {
-      strncpy(text_wx_t,"???.?",sizeof(text_wx_t));
-      wx.conditions = 0;
-    } else if(wx.conditions == 201) {
-      strncpy(text_wx_t,"LOC?",sizeof(text_wx_t));
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "WX: t=%d, c=%u, a=%u", (int)wx.temperature, wx.conditions, (unsigned int)wx.timestamp);
+    if(wx.conditions == 201) {
+      strncpy(text_wx_t,"GPS?",sizeof(text_wx_t));
     } else if(wx.conditions == 202) {
       strncpy(text_wx_t,"NET?",sizeof(text_wx_t));
+    } else if(wx.conditions == 203) {
+      strncpy(text_wx_t,"API?",sizeof(text_wx_t));
+    } else if(wx.conditions == 0 || wx.temperature > 199) {
+      strncpy(text_wx_t,"?!",sizeof(text_wx_t));
     } else {
       ftoa(text_wx_t,wx.temperature,1);
     }
@@ -329,7 +331,6 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
     if(weather_c_layer) {
       layer_mark_dirty(weather_c_layer);
     }
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "WX: t=%s, c=%u, a=%u", text_wx_t, wx.conditions, (unsigned int)wx.timestamp);
   }
 }
 
@@ -340,7 +341,7 @@ void inbox_dropped_callback(AppMessageResult reason, void *context) {
 void outbox_failed_callback(DictionaryIterator *iter ,AppMessageResult reason, void *context) {
   APP_LOG(APP_LOG_LEVEL_ERROR, "Outbox Message failed! Err: %d", reason);
   if(reason == APP_MSG_SEND_TIMEOUT) {
-    if(!app_timer_reschedule(atwx,30000)) atwx = app_timer_register(30000, handle_app_timer_weather, NULL);
+    if(!app_timer_reschedule(atwx,60000)) atwx = app_timer_register(60000, handle_app_timer_weather, NULL);
     strncpy(text_wx_t,"PHN?",sizeof(text_wx_t));
     if(weather_t_layer) {
       layer_mark_dirty(text_layer_get_layer(weather_t_layer)); // Text layers are supposed to auto-update, but it is slow
