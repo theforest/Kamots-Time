@@ -215,7 +215,7 @@ function fetchWeather(latitude, longitude) {
       "WX_A":0,
       "TOFF":0
     });
-  } 
+  }
   req.ontimeout = function(e) {
     console.log("Request Timeout " + req.status);
     Pebble.sendAppMessage({
