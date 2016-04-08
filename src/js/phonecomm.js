@@ -21,6 +21,7 @@ var optretries = 4;
 var KEY_CONFVER = 52668701; // configuration version ID (no this has nothing to do with the keys in main.h)
 var KEY_CONFDAT = 52668711; // configuration data (using the same key IDs for localStorage just for my own OCD)
 var wxreq = 2;
+var cachedcoords = null;
 
 Pebble.addEventListener("showConfiguration",
   function(e) {
@@ -206,9 +207,8 @@ function fetchWeather(latitude, longitude) {
   var url = "http://api.openweathermap.org/data/2.5/weather?lat=" + latitude + "&lon=" + longitude + "&cnt=1";
   if(wxreq == 1) url = url + "&units=metric&APPID=" + owm_appid;
   else url = url + "&units=imperial&APPID=" + owm_appid;
-  req.open('GET', url, true);
   req.onerror = function(e) {
-    console.log("Request Error " + req.status + " " + e.target.response.reason);
+    console.error("Request Error " + req.status + " " + e.target.response.reason);
     Pebble.sendAppMessage({
       "WX_C":202,
       "WX_T":2000,
@@ -217,7 +217,7 @@ function fetchWeather(latitude, longitude) {
     });
   }
   req.ontimeout = function(e) {
-    console.log("Request Timeout " + req.status);
+    console.error("Request Timeout " + req.status);
     Pebble.sendAppMessage({
       "WX_C":202,
       "WX_T":2000,
@@ -253,11 +253,11 @@ function fetchWeather(latitude, longitude) {
             function(e) {
               console.log("Send weather successful @", runtime);
             }, function(e) {
-              console.log("Send weather failed! @", runtime);
+              console.error("Send weather failed! @", runtime);
             }
           );
         } else {
-        console.log("API Error " + response.cod);
+        console.error("API Error " + response.cod);
         Pebble.sendAppMessage({
           "WX_C":203,
           "WX_T":2000,
@@ -266,7 +266,7 @@ function fetchWeather(latitude, longitude) {
         });
         }
       } else {
-        console.log("HTTP Error " + req.status);
+        console.error("HTTP Error " + req.status);
         Pebble.sendAppMessage({
           "WX_C":202,
           "WX_T":2000,
@@ -275,7 +275,7 @@ function fetchWeather(latitude, longitude) {
         });
       }
     } else {
-      console.log("Request Error " + req.status + " readyState=" + req.readyState);
+      console.error("Request Error " + req.status + " readyState=" + req.readyState);
       Pebble.sendAppMessage({
         "WX_C":202,
         "WX_T":2000,
@@ -284,27 +284,35 @@ function fetchWeather(latitude, longitude) {
       });
     }
   };
+  req.timeout = 20000;
+  req.open('GET', url, true);
   req.send(null);
 }
 
 function locationSuccess(pos) {
   var coordinates = pos.coords;
+  cachedcoords = pos.coords;
   // console.log(coordinates.latitude + " " + coordinates.longitude);
   fetchWeather(coordinates.latitude, coordinates.longitude);
 }
 
 function locationError(err) {
-  console.warn("location error!");
-  Pebble.sendAppMessage({
-    "WX_C":201,
-    "WX_T":2000,
-    "WX_A":0,
-    "TOFF":0
-  });
+  console.warn("location error: " + err);
+  if(cachedcoords != null) {
+    console.log("Using cached location: " + cachedcoords.latitude + " " + cachedcoords.longitude);
+    fetchWeather(cachedcoords.latitude, cachedcoords.longitude);
+  } else {
+    Pebble.sendAppMessage({
+      "WX_C":201,
+      "WX_T":2000,
+      "WX_A":0,
+      "TOFF":0
+    });
+  }
 }
 
 var startWeatherFetch = function() {
-  var locationOptions = { "timeout": 20000, "maximumAge": 300000, "enableHighAccuracy": false };
+  var locationOptions = { "timeout": 30000, "maximumAge": 300000, "enableHighAccuracy": false };
   navigator.geolocation.getCurrentPosition(locationSuccess, locationError, locationOptions);
 };
 

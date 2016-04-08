@@ -15,8 +15,11 @@ int hours_to_minutes(int hours_out_of_12) {
 void weather_calc_age() {
   unsigned int age = 0;
   if(wx.conditions == 0) {
-    lastwxage = time(NULL)-29;
+    lastwxage = time(NULL)-28;
     text_wx_age[0] = 0;
+    if(weather_a_layer) {
+      layer_mark_dirty(text_layer_get_layer(weather_a_layer)); // Text layers are supposed to auto-update, but it is slow
+    }
   } else if(wx.conditions > 199) {
     if(wx.conditions == 201) {
       strncpy(text_wx_age,"GPS?",sizeof(text_wx_age));
@@ -24,8 +27,13 @@ void weather_calc_age() {
       strncpy(text_wx_age,"NET?",sizeof(text_wx_age));
     } else if(wx.conditions == 203) {
       strncpy(text_wx_age,"API?",sizeof(text_wx_age));
+    } else if(wx.conditions == 204) {
+      strncpy(text_wx_age,"PHN?",sizeof(text_wx_age));
     } else {
       strncpy(text_wx_age,"ERR!",sizeof(text_wx_age));
+    }
+    if(weather_a_layer) {
+      layer_mark_dirty(text_layer_get_layer(weather_a_layer)); // Text layers are supposed to auto-update, but it is slow
     }
   }
 

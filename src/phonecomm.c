@@ -283,8 +283,10 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
       if(wx_freq == 20) conf.weather_update_frequency = 20;
       if(wx_freq == 30) conf.weather_update_frequency = 30;
       if(wx_freq == 40) conf.weather_update_frequency = 40;
+      if(wx_freq == 45) conf.weather_update_frequency = 45;
       if(wx_freq == 50) conf.weather_update_frequency = 50;
       if(wx_freq == 60) conf.weather_update_frequency = 60;
+      if(wx_freq == 120) conf.weather_update_frequency = 120;
       config_changed++;
       break;
 
@@ -314,11 +316,13 @@ void inbox_received_callback(DictionaryIterator *iterator, void *context) {
   if(wxupdate && conf.display_weather) {
     APP_LOG(APP_LOG_LEVEL_DEBUG, "WX: t=%d, c=%u, a=%u", (int)wx.temperature, wx.conditions, (unsigned int)wx.timestamp);
     if(wx.conditions > 200 || wx.conditions == 0) {
+      if(!app_timer_reschedule(atwx,300000)) atwx = app_timer_register(300000, handle_app_timer_weather, NULL); // Schedule retry
       strncpy(text_wx_t,"---.-",sizeof(text_wx_t));
     } else {
+      if(!app_timer_reschedule(atwx,conf.weather_update_frequency * 60000)) atwx = app_timer_register(conf.weather_update_frequency * 60000, handle_app_timer_weather, NULL); // Schedule next update
       ftoa(text_wx_t,wx.temperature,1);
-      weather_calc_age();
     }
+    weather_calc_age();
     if(weather_t_layer) {
       layer_mark_dirty(text_layer_get_layer(weather_t_layer)); // Text layers are supposed to auto-update, but it is slow
     }
@@ -336,10 +340,8 @@ void outbox_failed_callback(DictionaryIterator *iter ,AppMessageResult reason, v
   APP_LOG(APP_LOG_LEVEL_ERROR, "Outbox Message failed! Err: %d", reason);
   if(reason == APP_MSG_SEND_TIMEOUT) {
     if(!app_timer_reschedule(atwx,60000)) atwx = app_timer_register(60000, handle_app_timer_weather, NULL);
-    strncpy(text_wx_t,"PHN?",sizeof(text_wx_t));
-    if(weather_t_layer) {
-      layer_mark_dirty(text_layer_get_layer(weather_t_layer)); // Text layers are supposed to auto-update, but it is slow
-    }
+    wx.conditions = 204;
+    strncpy(text_wx_t,"---.-",sizeof(text_wx_t));
   }
 }
 
